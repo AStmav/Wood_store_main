@@ -1,0 +1,100 @@
+{% extends "admin/change_list.html" %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="analytics-dashboard" style="margin-bottom: 24px;">
+    <h2 style="margin-bottom: 16px;">Аналитика просмотров ({{ period_start }} — {{ period_end }})</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+      <div style="background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom: 12px; font-size: 16px;">Топ-5 товаров по просмотрам</h3>
+        <canvas id="topProductsChart" height="260"></canvas>
+      </div>
+      <div style="background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom: 12px; font-size: 16px;">Посещаемость сайта за 7 дней</h3>
+        <canvas id="visitsChart" height="260"></canvas>
+      </div>
+    </div>
+  </div>
+  {{ block.super }}
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+  <script>
+    (function() {
+      const topProductsLabels = {{ top_products_labels|default:"[]"|safe }};
+      const topProductsValues = {{ top_products_values|default:"[]"|safe }};
+      const visitsLabels = {{ visits_labels|default:"[]"|safe }};
+      const visitsValues = {{ visits_values|default:"[]"|safe }};
+
+      const palette = ['#2563eb', '#16a34a', '#f97316', '#7c3aed', '#ef4444'];
+
+      const topProductsCtx = document.getElementById('topProductsChart');
+      if (topProductsCtx && topProductsLabels.length) {
+        new Chart(topProductsCtx, {
+          type: 'bar',
+          data: {
+            labels: topProductsLabels,
+            datasets: [{
+              label: 'Количество просмотров',
+              data: topProductsValues,
+              backgroundColor: palette,
+              borderRadius: 6,
+            }]
+          },
+          options: {
+            plugins: {
+              legend: { display: false }
+            },
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            }
+          }
+        });
+      }
+
+      const visitsCtx = document.getElementById('visitsChart');
+      if (visitsCtx && visitsLabels.length) {
+        new Chart(visitsCtx, {
+          type: 'line',
+          data: {
+            labels: visitsLabels,
+            datasets: [{
+              label: 'Посещения',
+              data: visitsValues,
+              fill: false,
+              borderColor: '#2563eb',
+              backgroundColor: '#2563eb',
+              tension: 0.3,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            }
+          }
+        });
+      }
+    })();
+  </script>
+{% endblock %}
+
+
