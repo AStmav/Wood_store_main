@@ -27,17 +27,27 @@ services:
     # Не открываем порт в продакшене (только внутри сети)
     volumes:
       - redis_data:/data
-      - ./docker/redis-entrypoint.sh:/entrypoint.sh:ro
-    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    # Используем переменную окружения напрямую
+    # Если REDIS_PASSWORD пустой, Redis запустится без пароля
+    command: >
+      sh -c "
+      if [ -z \"$$REDIS_PASSWORD\" ]; then
+        echo 'WARNING: REDIS_PASSWORD is empty. Starting Redis without password.'
+        redis-server
+      else
+        echo 'Starting Redis with password authentication...'
+        redis-server --requirepass \"$$REDIS_PASSWORD\"
+      fi
+      "
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     healthcheck:
       test: >
         sh -c "
-        if [ -n \"$$REDIS_PASSWORD\" ]; then
-          redis-cli -a \"$$REDIS_PASSWORD\" ping
+        if [ -z \"$$REDIS_PASSWORD\" ]; then
+          redis-cli ping || exit 1
         else
-          redis-cli ping
+          redis-cli -a \"$$REDIS_PASSWORD\" ping || exit 1
         fi
         "
       interval: 10s
