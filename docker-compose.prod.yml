@@ -27,9 +27,19 @@ services:
     # Не открываем порт в продакшене (только внутри сети)
     volumes:
       - redis_data:/data
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+      - ./docker/redis-entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: >
+        sh -c "
+        if [ -n \"$$REDIS_PASSWORD\" ]; then
+          redis-cli -a \"$$REDIS_PASSWORD\" ping
+        else
+          redis-cli ping
+        fi
+        "
       interval: 10s
       timeout: 5s
       retries: 5
