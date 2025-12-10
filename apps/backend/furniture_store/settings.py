@@ -291,28 +291,43 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://maxmavn8n.loca.lt",
-    "http://maxmavn8n.loca.lt",
-]
+# Читаем из переменной окружения для production
+CORS_ALLOWED_ORIGINS_STR = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if CORS_ALLOWED_ORIGINS_STR:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS_STR.split(',')]
+else:
+    # Fallback для разработки
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://maxmavn8n.loca.lt",
+        "http://maxmavn8n.loca.lt",
+    ]
 
-# Разрешаем все поддомены .loca.lt для разработки через туннель
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https?://.*\.loca\.lt$",
-]
+# Разрешаем все поддомены .loca.lt для разработки через туннель (только если не указаны CORS_ALLOWED_ORIGINS)
+if not CORS_ALLOWED_ORIGINS_STR:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https?://.*\.loca\.lt$",
+    ]
+else:
+    CORS_ALLOWED_ORIGIN_REGEXES = []
 
 # CSRF settings - для API используем токены, но защищаем формы
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://maxmavn8n.loca.lt',
-    'http://maxmavn8n.loca.lt',
-]
+# Читаем из переменной окружения для production
+CSRF_TRUSTED_ORIGINS_STR = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if CSRF_TRUSTED_ORIGINS_STR:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS_STR.split(',')]
+else:
+    # Fallback для разработки
+    CSRF_TRUSTED_ORIGINS = [
+        'http://localhost:3000',
+         'http://127.0.0.1:3000',
+        'https://maxmavn8n.loca.lt',
+        'http://maxmavn8n.loca.lt',
+    ]
 
 # Для безопасности в продакшене
-CSRF_COOKIE_SECURE = False  # True для HTTPS в продакшене
+CSRF_COOKIE_SECURE = not DEBUG  # True для HTTPS в production (когда DEBUG=False)
 CSRF_COOKIE_HTTPONLY = True
 CSRF_USE_SESSIONS = False
 
