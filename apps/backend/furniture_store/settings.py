@@ -331,6 +331,18 @@ CSRF_COOKIE_SECURE = not DEBUG  # True для HTTPS в production (когда DE
 CSRF_COOKIE_HTTPONLY = True
 CSRF_USE_SESSIONS = False
 
+# Настройки для работы через прокси (nginx)
+# Важно: Django должен понимать, что запрос идет через HTTPS
+# nginx передает заголовок X-Forwarded-Proto: https
+if not DEBUG:
+    # В production: Django должен доверять заголовкам от прокси
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True  # Сессионные куки только через HTTPS
+    SECURE_SSL_REDIRECT = False  # Не делаем редирект на уровне Django (nginx уже делает)
+    SECURE_HSTS_SECONDS = 31536000  # HSTS (1 год)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 # Debug Toolbar settings
 INTERNAL_IPS = [
     "127.0.0.1",
