@@ -1,25 +1,36 @@
 // Конфигурация поддомена бэкенда для туннеля
-// После запуска: lt --port 8000 --subdomain your-backend-subdomain
-// Укажите здесь поддомен, который вам выдал localtunnel
 const BACKEND_TUNNEL_SUBDOMAIN = import.meta.env.VITE_BACKEND_TUNNEL_SUBDOMAIN || 'your-backend-subdomain';
 
 // Определяем базовый URL API в зависимости от окружения
 const getApiBaseURL = () => {
-  // Если указана переменная окружения VITE_API_URL, используем её
-  if (import.meta.env.VITE_API_URL) {
-    const url = import.meta.env.VITE_API_URL;
-    return url.endsWith('/') ? url.slice(0, -1) : url;
+  // ВАЖНО: Сначала проверяем hostname (самый надежный способ)
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    
+    // В production используем относительный путь (пустая строка для медиа)
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('loca.lt')) {
+      return '';
+    }
+    
+    // Если фронтенд доступен через туннель localtunnel
+    if (hostname.includes('loca.lt')) {
+      if (BACKEND_TUNNEL_SUBDOMAIN && BACKEND_TUNNEL_SUBDOMAIN !== 'your-backend-subdomain') {
+        return `https://${BACKEND_TUNNEL_SUBDOMAIN}.loca.lt`;
+      }
+      return 'http://localhost:8000';
+    }
   }
   
-  // Если фронтенд доступен через туннель localtunnel
-  if (typeof window !== 'undefined' && window.location.hostname.includes('loca.lt')) {
-    // Используем поддомен бэкенда из конфигурации
-    if (BACKEND_TUNNEL_SUBDOMAIN && BACKEND_TUNNEL_SUBDOMAIN !== 'your-backend-subdomain') {
-      return `https://${BACKEND_TUNNEL_SUBDOMAIN}.loca.lt`;
+  // Только для localhost проверяем переменную окружения VITE_API_URL
+  const viteApiUrl = import.meta.env.VITE_API_URL;
+  if (viteApiUrl && viteApiUrl.trim() !== '' && viteApiUrl !== 'undefined') {
+    const url = viteApiUrl.trim();
+    // Защита: если в переменной localhost, но мы не на localhost - игнорируем
+    if (url.includes('localhost') && typeof window !== 'undefined' && 
+        window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return '';
     }
-    // Если поддомен не настроен, пробуем использовать localhost
-    console.warn('⚠️ Backend tunnel subdomain not configured. Using localhost (may not work through tunnel)');
-    return 'http://localhost:8000';
+    return url.endsWith('/') ? url.slice(0, -1) : url;
   }
   
   // Локальная разработка
@@ -30,5 +41,8 @@ const getApiBaseURL = () => {
 export const getMediaUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  return `${getApiBaseURL()}${path}`;
+  const baseUrl = getApiBaseURL();
+  // Если baseUrl пустой (production), используем относительный путь
+  if (!baseUrl) return path;
+  return `${baseUrl}${path}`;
 }; 
