@@ -32,4 +32,3 @@ export const getMediaUrl = (path) => {
   if (!baseUrl) return path;
   return `${baseUrl}${path}`;
 }; 
-}; 
