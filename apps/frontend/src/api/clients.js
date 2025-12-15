@@ -4,61 +4,31 @@ import axios from 'axios';
 const BACKEND_TUNNEL_SUBDOMAIN = import.meta.env.VITE_BACKEND_TUNNEL_SUBDOMAIN || 'your-backend-subdomain';
 
 // Определяем базовый URL API в зависимости от окружения
+// ВАРИАНТ 1 (РЕКОМЕНДУЕМЫЙ): Используем относительные пути для production
 const getApiBaseURL = () => {
-  // ВАЖНО: Сначала проверяем hostname (самый надежный способ)
-  // Это гарантирует, что в production всегда используется относительный путь
+  // Проверяем hostname во время выполнения (runtime)
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
     
-    // В production (не localhost, не 127.0.0.1, не туннель) всегда используем относительный путь
+    // Production: используем относительный путь (best practice)
     if (hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('loca.lt')) {
-      // Используем относительный путь - nginx проксирует /api/ на backend
-      console.log('🌐 Production mode detected:', hostname, '- Using relative path /api/');
-      return '/api/';
+      return '/api/'; // Относительный путь - браузер сам добавит домен
     }
     
-    // Если фронтенд доступен через туннель localtunnel
+    // Туннель localtunnel
     if (hostname.includes('loca.lt')) {
       if (BACKEND_TUNNEL_SUBDOMAIN && BACKEND_TUNNEL_SUBDOMAIN !== 'your-backend-subdomain') {
         return `https://${BACKEND_TUNNEL_SUBDOMAIN}.loca.lt/api/`;
       }
-      console.warn('⚠️ Backend tunnel subdomain not configured. Using localhost (may not work through tunnel)');
       return 'http://localhost:8000/api/';
     }
   }
   
-  // Только для localhost проверяем переменную окружения VITE_API_URL
-  const viteApiUrl = import.meta.env.VITE_API_URL;
-  if (viteApiUrl && viteApiUrl.trim() !== '' && viteApiUrl !== 'undefined') {
-    const url = viteApiUrl.trim();
-    // Дополнительная защита: если в переменной localhost, но мы не на localhost - игнорируем
-    if (url.includes('localhost') && typeof window !== 'undefined' && 
-        window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      console.warn('⚠️ VITE_API_URL contains localhost but we are in production, using relative path instead');
-      return '/api/';
-    }
-    return url.endsWith('/') 
-      ? url + 'api/'
-      : url + '/api/';
-  }
-  
-  // Локальная разработка (только если мы действительно на localhost)
-  console.log('🏠 Local development mode: Using http://localhost:8000/api/');
+  // Локальная разработка (localhost)
   return 'http://localhost:8000/api/';
 };
 
-// Простая функция для получения полного URL изображения
-export const getMediaUrl = (path) => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  const baseUrl = getApiBaseURL();
-  // Если baseUrl пустой (production), используем относительный путь
-  if (!baseUrl) return path;
-  return `${baseUrl}${path}`;
-};
-
 const baseURL = getApiBaseURL();
-console.log('📡 API Base URL:', baseURL, '| Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
 
 const api = axios.create({
   baseURL: baseURL,
