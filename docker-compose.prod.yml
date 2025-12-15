@@ -128,7 +128,8 @@ services:
       args:
         # VITE_API_URL должен быть БЕЗ /api в конце, т.к. код добавляет его автоматически
         # Для production используйте https://skazkindomykt.ru
-        - VITE_API_URL=${VITE_API_URL:-https://skazkindomykt.ru}
+        #- VITE_API_URL=${VITE_API_URL:-https://skazkindomykt.ru}
+        - VITE_API_URL=https://skazkindomykt.ru
     container_name: wood_shop_frontend
     # Не открываем порт напрямую, доступ через nginx
     depends_on:
