@@ -1,31 +1,28 @@
 import axios from 'axios';
 
-// Конфигурация поддомена бэкенда для туннеля
-const BACKEND_TUNNEL_SUBDOMAIN = import.meta.env.VITE_BACKEND_TUNNEL_SUBDOMAIN || 'your-backend-subdomain';
-
-// Определяем базовый URL API в зависимости от окружения
-// ВАРИАНТ 1 (РЕКОМЕНДУЕМЫЙ): Используем относительные пути для production
+// Определяем базовый URL API из переменных окружения
+// Для production: не указывайте VITE_API_URL (будет использован относительный путь)
+// Для development: установите VITE_API_URL=http://localhost:8000 в .env
 const getApiBaseURL = () => {
-  // Проверяем hostname во время выполнения (runtime)
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    
-    // Production: используем относительный путь (best practice)
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1' && !hostname.includes('loca.lt')) {
-      return '/api/'; // Относительный путь - браузер сам добавит домен
-    }
-    
-    // Туннель localtunnel
-    if (hostname.includes('loca.lt')) {
-      if (BACKEND_TUNNEL_SUBDOMAIN && BACKEND_TUNNEL_SUBDOMAIN !== 'your-backend-subdomain') {
-        return `https://${BACKEND_TUNNEL_SUBDOMAIN}.loca.lt/api/`;
-      }
-      return 'http://localhost:8000/api/';
-    }
+  // Если указана переменная окружения VITE_API_URL, используем её
+  const viteApiUrl = import.meta.env.VITE_API_URL;
+  if (viteApiUrl && viteApiUrl.trim() !== '' && viteApiUrl !== 'undefined') {
+    const url = viteApiUrl.trim();
+    // Добавляем /api/ если его нет в URL
+    return url.endsWith('/') 
+      ? url + 'api/'
+      : url + '/api/';
   }
   
-  // Локальная разработка (localhost)
-  return 'http://localhost:8000/api/';
+  // Для туннеля localtunnel
+  const tunnelSubdomain = import.meta.env.VITE_BACKEND_TUNNEL_SUBDOMAIN;
+  if (tunnelSubdomain && tunnelSubdomain !== 'your-backend-subdomain') {
+    return `https://${tunnelSubdomain}.loca.lt/api/`;
+  }
+  
+  // По умолчанию: относительный путь (production)
+  // Браузер автоматически добавит текущий домен
+  return '/api/';
 };
 
 const baseURL = getApiBaseURL();
