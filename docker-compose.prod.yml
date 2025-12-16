@@ -125,7 +125,7 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
-      args:
+      #args:
         # Для production не указываем VITE_API_URL - используем относительные пути
         # Для localhost development укажите: VITE_API_URL=http://localhost:8000
         # - VITE_API_URL=https://skazkindomykt.ru
