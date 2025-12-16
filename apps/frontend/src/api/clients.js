@@ -6,26 +6,34 @@ import axios from 'axios';
 const getApiBaseURL = () => {
   // Если указана переменная окружения VITE_API_URL, используем её
   const viteApiUrl = import.meta.env.VITE_API_URL;
+  
+  // DEBUG: логируем для отладки
+  console.log('🔍 VITE_API_URL from env:', viteApiUrl);
+  
   if (viteApiUrl && viteApiUrl.trim() !== '' && viteApiUrl !== 'undefined') {
     const url = viteApiUrl.trim();
-    // Добавляем /api/ если его нет в URL
-    return url.endsWith('/') 
-      ? url + 'api/'
-      : url + '/api/';
+    const result = url.endsWith('/') ? url + 'api/' : url + '/api/';
+    console.log('🔍 Using VITE_API_URL:', result);
+    return result;
   }
   
   // Для туннеля localtunnel
   const tunnelSubdomain = import.meta.env.VITE_BACKEND_TUNNEL_SUBDOMAIN;
   if (tunnelSubdomain && tunnelSubdomain !== 'your-backend-subdomain') {
-    return `https://${tunnelSubdomain}.loca.lt/api/`;
+    const result = `https://${tunnelSubdomain}.loca.lt/api/`;
+    console.log('🔍 Using tunnel:', result);
+    return result;
   }
   
   // По умолчанию: относительный путь (production)
   // Браузер автоматически добавит текущий домен
+  console.log('🔍 Using relative path: /api/');
   return '/api/';
 };
 
 const baseURL = getApiBaseURL();
+console.log('📡 FINAL API Base URL:', baseURL);
+console.log('📡 Current URL:', typeof window !== 'undefined' ? window.location.href : 'N/A');
 
 const api = axios.create({
   baseURL: baseURL,

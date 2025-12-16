@@ -17,7 +17,7 @@ const getApiBaseURL = () => {
   const tunnelSubdomain = import.meta.env.VITE_BACKEND_TUNNEL_SUBDOMAIN;
   if (tunnelSubdomain && tunnelSubdomain !== 'your-backend-subdomain') {
     return `https://${tunnelSubdomain}.loca.lt`;
-  }
+    }
   
   // По умолчанию: пустая строка (production - относительные пути)
   return '';

@@ -126,10 +126,9 @@ services:
       context: ./apps/frontend
       dockerfile: Dockerfile
       args:
-        # VITE_API_URL должен быть БЕЗ /api в конце, т.к. код добавляет его автоматически
-        # Для production используйте https://skazkindomykt.ru
-        #- VITE_API_URL=${VITE_API_URL:-https://skazkindomykt.ru}
-        - VITE_API_URL=https://skazkindomykt.ru
+        # Для production не указываем VITE_API_URL - используем относительные пути
+        # Для localhost development укажите: VITE_API_URL=http://localhost:8000
+        # - VITE_API_URL=https://skazkindomykt.ru
     container_name: wood_shop_frontend
     # Не открываем порт напрямую, доступ через nginx
     depends_on:
