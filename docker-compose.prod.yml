@@ -125,12 +125,9 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
-      #args:
-        # Для production не указываем VITE_API_URL - используем относительные пути
-        # Для localhost development укажите: VITE_API_URL=http://localhost:8000
-        # - VITE_API_URL=https://skazkindomykt.ru
+      # Для production используем относительные пути (не указываем args)
+      # Для localhost development добавьте: args: { VITE_API_URL: "http://localhost:8000" }
     container_name: wood_shop_frontend
-    # Не открываем порт напрямую, доступ через nginx
     depends_on:
       - backend
     restart: unless-stopped

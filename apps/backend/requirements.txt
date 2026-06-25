@@ -1,5 +1,6 @@
 # Django и DRF
 Django==5.0.2
+django-jazzmin==3.0.1
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 django-filter==23.5

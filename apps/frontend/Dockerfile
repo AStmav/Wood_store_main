@@ -14,11 +14,9 @@ RUN npm ci
 # Копируем исходный код
 COPY . .
 
-# ARG для передачи переменных окружения во время сборки
-#ARG VITE_API_URL=http://localhost:8000
-#ENV VITE_API_URL=$VITE_API_URL
-
 # Собираем приложение
+ARG VITE_API_URL=
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 # Stage 2: Production с nginx

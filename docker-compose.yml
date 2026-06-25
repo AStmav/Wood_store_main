@@ -45,7 +45,6 @@ services:
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - ./apps/backend:/app
       - backend_static:/app/staticfiles
       - backend_media:/app/media
     env_file:
@@ -70,8 +69,6 @@ services:
       dockerfile: Dockerfile
     container_name: wood_shop_celery
     command: celery -A furniture_store worker --loglevel=info --concurrency=2
-    volumes:
-      - ./apps/backend:/app
     env_file:
       - ./apps/backend/.env
     environment:
@@ -93,8 +90,6 @@ services:
       dockerfile: Dockerfile
     container_name: wood_shop_celery_beat
     command: celery -A furniture_store beat --loglevel=info
-    volumes:
-      - ./apps/backend:/app
     env_file:
       - ./apps/backend/.env
     environment:
@@ -114,8 +109,8 @@ services:
     build:
       context: ./apps/frontend
       dockerfile: Dockerfile
-      #args:
-        #- VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
     container_name: wood_shop_frontend
     ports:
       - "${FRONTEND_PORT:-3000}:80"
