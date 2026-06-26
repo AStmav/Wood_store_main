@@ -1,0 +1,28 @@
+# Python
+apps/backend/.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Django
+apps/backend/db.sqlite3
+apps/backend/staticfiles/
+apps/backend/media/
+apps/backend/celery.log
+apps/backend/.env
+
+# Node
+apps/frontend/node_modules/
+apps/frontend/dist/
+apps/frontend/.env
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Secrets
+.env
+.env.local

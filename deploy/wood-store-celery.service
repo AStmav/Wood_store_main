@@ -1,0 +1,16 @@
+[Unit]
+Description=Wood Store Celery Worker
+After=network.target redis-server.service wood-store.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/wood_store/apps/backend
+Environment="PATH=/opt/wood_store/apps/backend/.venv/bin"
+ExecStart=/opt/wood_store/apps/backend/.venv/bin/celery -A furniture_store worker --loglevel=info --concurrency=2
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
