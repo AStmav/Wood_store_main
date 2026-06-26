@@ -12,6 +12,7 @@ python3 -m venv .venv
 # shellcheck disable=SC1091
 source .venv/bin/activate
 pip install --upgrade pip
+pip install "setuptools>=69,<82"
 pip install -r requirements.txt
 
 if [ ! -f .env ]; then
