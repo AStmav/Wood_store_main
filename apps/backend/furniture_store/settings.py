@@ -410,7 +410,24 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-# Логирование Celery
+# Логирование: в production только console (journalctl), файл — в dev
+_log_handlers = ['console']
+_handlers = {
+    'console': {
+        'level': 'INFO' if not DEBUG else 'DEBUG',
+        'class': 'logging.StreamHandler',
+        'formatter': 'simple',
+    },
+}
+if DEBUG:
+    _handlers['file'] = {
+        'level': 'INFO',
+        'class': 'logging.FileHandler',
+        'filename': str(BASE_DIR / 'celery.log'),
+        'formatter': 'verbose',
+    }
+    _log_handlers.append('file')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -424,27 +441,15 @@ LOGGING = {
             'style': '{',
         },
     },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'celery.log',
-            'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
+    'handlers': _handlers,
     'loggers': {
         'celery': {
-            'handlers': ['file', 'console'],
+            'handlers': _log_handlers,
             'level': 'INFO',
             'propagate': True,
         },
         'notifications': {
-            'handlers': ['file', 'console'],
+            'handlers': _log_handlers,
             'level': 'INFO',
             'propagate': True,
         },
