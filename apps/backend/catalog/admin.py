@@ -26,16 +26,16 @@ class ProductAdminForm(forms.ModelForm):
     
     class Meta:
         model = Product
-        fields = '__all__'
+        exclude = ('slug',)  # генерируется автоматически из названия
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ('name', 'category', 'price', 'stock_quantity', 'is_available', 'stock_status', 'rating', 'uuid', 'created_at', 'updated_at')
+    list_display = ('name', 'slug', 'category', 'price', 'stock_quantity', 'is_available', 'stock_status', 'rating', 'created_at')
     list_filter = ('category', 'is_available', 'created_at')
-    search_fields = ('name', 'description')
-    readonly_fields = ('uuid', 'created_at', 'updated_at', 'stock_status')
-    
+    search_fields = ('name', 'description', 'slug')
+    readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at', 'stock_status')
+
     fieldsets = (
         ('Основная информация', {
             'fields': ('name', 'description', 'category', 'image')
@@ -56,10 +56,31 @@ class ProductAdmin(admin.ModelAdmin):
             'description': 'Управление количеством и доступностью товара'
         }),
         ('Системная информация', {
-            'fields': ('uuid', 'slug', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
+            'fields': ('uuid', 'created_at', 'updated_at'),
+            'classes': ('collapse',),
+            'description': (
+                'Slug создаётся автоматически: «название-категория». '
+                'При совпадении добавляется суффикс -2, -3, …'
+            ),
         }),
     )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj is not None:
+            fieldsets = list(fieldsets)
+            fieldsets[-1] = (
+                'Системная информация',
+                {
+                    'fields': ('uuid', 'slug', 'created_at', 'updated_at'),
+                    'classes': ('collapse',),
+                    'description': (
+                'Slug создаётся автоматически: «название-категория». '
+                'При совпадении добавляется суффикс -2, -3, …'
+            ),
+                },
+            )
+        return fieldsets
     
     def stock_status(self, obj):
         """Отображает статус наличия товара"""
