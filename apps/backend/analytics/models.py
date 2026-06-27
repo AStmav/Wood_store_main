@@ -50,8 +50,8 @@ class ProductView(BaseModel):
         verbose_name = _('Просмотр товара')
         verbose_name_plural = _('Просмотры товаров')
         indexes = [
-            models.Index(fields=['product', 'created_at']),
-            models.Index(fields=['session_id', 'created_at']),
+            models.Index(fields=['product', 'created_at'], name='analytics_p_product_9e5e76_idx'),
+            models.Index(fields=['session_id', 'created_at'], name='analytics_p_session_07720e_idx'),
         ]
         ordering = ['-created_at']
 
@@ -95,8 +95,8 @@ class SiteVisit(BaseModel):
         verbose_name = _('Посещение сайта')
         verbose_name_plural = _('Посещения сайта')
         indexes = [
-            models.Index(fields=['created_at']),
-            models.Index(fields=['session_id', 'created_at']),
+            models.Index(fields=['created_at'], name='analytics_s_created_04f2f5_idx'),
+            models.Index(fields=['session_id', 'created_at'], name='analytics_s_session_934c24_idx'),
         ]
         ordering = ['-created_at']
 

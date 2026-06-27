@@ -443,6 +443,11 @@ LOGGING = {
     },
     'handlers': _handlers,
     'loggers': {
+        'django.request': {
+            'handlers': _log_handlers,
+            'level': 'ERROR',
+            'propagate': False,
+        },
         'celery': {
             'handlers': _log_handlers,
             'level': 'INFO',

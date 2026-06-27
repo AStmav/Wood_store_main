@@ -26,6 +26,14 @@ fi
 python manage.py migrate
 python manage.py collectstatic --noinput
 
+# Gunicorn работает от www-data — БД и media должны быть доступны на запись
+if id www-data &>/dev/null; then
+  touch db.sqlite3 2>/dev/null || true
+  chown www-data:www-data db.sqlite3 media 2>/dev/null || true
+  chmod 664 db.sqlite3 2>/dev/null || true
+  chmod 775 media 2>/dev/null || true
+fi
+
 echo "==> Frontend: зависимости"
 cd "$FRONTEND"
 if [ -f package-lock.json ]; then
