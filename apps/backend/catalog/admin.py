@@ -13,20 +13,28 @@ class ProductAdminForm(forms.ModelForm):
     """Форма для товара с улучшенным полем характеристик"""
     specifications = forms.JSONField(
         required=False,
+        initial=dict,
         help_text=(
             'Введите характеристики в формате JSON. '
-            'Пример: {"Цвет": "Натуральный", "Материал": "Дерево", "Размеры": "120x60x75 см"}'
+            'Можно оставить пустым — сохранится как {}. '
+            'Пример: {"Цвет": "Натуральный", "Материал": "Дерево"}'
         ),
         widget=forms.Textarea(attrs={
             'rows': 5,
             'cols': 80,
-            'placeholder': '{\n  "Цвет": "Натуральный",\n  "Материал": "Дерево",\n  "Размеры": "120x60x75 см"\n}'
+            'placeholder': '{\n  "Цвет": "Натуральный",\n  "Материал": "Дерево"\n}'
         })
     )
-    
+
     class Meta:
         model = Product
         exclude = ('slug',)  # генерируется автоматически из названия
+
+    def clean_specifications(self):
+        value = self.cleaned_data.get('specifications')
+        if value in (None, ''):
+            return {}
+        return value
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):

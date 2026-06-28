@@ -60,6 +60,8 @@ class Product(BaseModel):
         return self.name
 
     def save(self, *args, **kwargs):
+        if self.specifications is None:
+            self.specifications = {}
         if self._should_regenerate_slug():
             base_slug = product_slug_base(self.name, self.category)
             self.slug = assign_unique_slug(self, base_slug, max_length=200)
