@@ -11,6 +11,7 @@ JAZZMIN_SETTINGS = {
         'orders.Order',
         'users.User',
         'news.News',
+        'pages.Page',
     ],
     'topmenu_links': [
         {'name': 'Открыть сайт', 'url': '/', 'new_window': True},
@@ -29,6 +30,7 @@ JAZZMIN_SETTINGS = {
         'users',
         'news',
         'about',
+        'pages',
         'analytics',
         'notifications',
         'auth',
@@ -45,6 +47,7 @@ JAZZMIN_SETTINGS = {
         'orders.Favorite': 'fas fa-heart',
         'news.News': 'fas fa-newspaper',
         'about.About': 'fas fa-info-circle',
+        'pages.Page': 'fas fa-file-contract',
         'analytics.ProductView': 'fas fa-chart-line',
         'analytics.SiteVisit': 'fas fa-globe',
     },

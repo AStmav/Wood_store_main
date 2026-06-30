@@ -51,6 +51,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('news.urls')),
     path('api/', include('about.urls')),  # Раздел "О нас"
+    path('api/', include('pages.urls')),
     path('api/catalog/', include('catalog.urls')),
     path('api/orders/', include('orders.urls')),
     path('api/users/', include('users.urls')),

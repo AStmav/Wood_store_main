@@ -2,6 +2,7 @@ import { useState } from 'react';
 import axios from '../api/clients.js';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
+import PersonalDataConsent from '../components/PersonalDataConsent.jsx';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -12,8 +13,8 @@ export default function Register() {
     last_name: '',
     phone: ''
   });
-  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [personalDataConsent, setPersonalDataConsent] = useState(false);
+  const [consentError, setConsentError] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -39,12 +40,8 @@ export default function Register() {
       setError('Пароль должен содержать минимум 6 символов');
       return false;
     }
-    if (!acceptedPrivacy) {
-      setError('Необходимо ознакомиться и принять политику конфиденциальности');
-      return false;
-    }
-    if (!acceptedTerms) {
-      setError('Необходимо ознакомиться и принять пользовательское соглашение');
+    if (!personalDataConsent) {
+      setConsentError('Отметьте согласие на обработку персональных данных, чтобы отправить заявку.');
       return false;
     }
     return true;
@@ -65,7 +62,8 @@ export default function Register() {
         password2: formData.password_confirm,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        phone: formData.phone
+        phone: formData.phone,
+        personal_data_consent: true,
       });
       
       navigate('/login', { 
@@ -74,6 +72,11 @@ export default function Register() {
     } catch (err) {
       if (err.response?.data?.email) {
         setError('Пользователь с таким email уже существует');
+      } else if (err.response?.data?.personal_data_consent) {
+        const message = Array.isArray(err.response.data.personal_data_consent)
+          ? err.response.data.personal_data_consent[0]
+          : err.response.data.personal_data_consent;
+        setConsentError(message);
       } else if (err.response?.data) {
         setError(Object.values(err.response.data).flat().join(', '));
       } else {
@@ -201,65 +204,20 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Чекбоксы согласия */}
-            <div className="space-y-3">
-              <div className="flex items-start">
-                <input
-                  id="privacy_checkbox"
-                  type="checkbox"
-                  checked={acceptedPrivacy}
-                  onChange={(e) => {
-                    setAcceptedPrivacy(e.target.checked);
-                    setError('');
-                  }}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="privacy_checkbox" className="ml-2 text-sm text-gray-700">
-                  Я ознакомился и согласен с{' '}
-                  <a 
-                    href="/privacy" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Политикой конфиденциальности
-                  </a>
-                  {' '}*
-                </label>
-              </div>
-
-              <div className="flex items-start">
-                <input
-                  id="terms_checkbox"
-                  type="checkbox"
-                  checked={acceptedTerms}
-                  onChange={(e) => {
-                    setAcceptedTerms(e.target.checked);
-                    setError('');
-                  }}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="terms_checkbox" className="ml-2 text-sm text-gray-700">
-                  Я ознакомился и согласен с{' '}
-                  <a 
-                    href="/terms" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Пользовательским соглашением
-                  </a>
-                  {' '}*
-                </label>
-              </div>
-            </div>
+            <PersonalDataConsent
+              checked={personalDataConsent}
+              onChange={(e) => {
+                setPersonalDataConsent(e.target.checked);
+                setConsentError('');
+                setError('');
+              }}
+              error={consentError}
+            />
 
             <div>
               <button
                 type="submit"
-                disabled={loading || !acceptedPrivacy || !acceptedTerms}
+                disabled={loading || !personalDataConsent}
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Регистрация...' : 'Зарегистрироваться'}

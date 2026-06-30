@@ -22,7 +22,10 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'get_status_display_colored', 'get_delivery_type', 'get_total_amount', 'get_telegram_status', 'created_at', 'get_is_deleted_display')
     list_filter = ('status', 'delivery__delivery_type', 'telegram_notification_sent', 'created_at', 'is_deleted')
     search_fields = ('id', 'user__email', 'user__phone', 'address', 'order_number')
-    readonly_fields = ('total_amount', 'created_at', 'updated_at', 'order_number', 'telegram_notification_sent')
+    readonly_fields = (
+        'total_amount', 'created_at', 'updated_at', 'order_number',
+        'telegram_notification_sent', 'personal_data_consent', 'consent_at',
+    )
     inlines = [OrderItemInline, DeliveryInline, PaymentInline]
     
     # Группировка полей в админке
@@ -32,6 +35,10 @@ class OrderAdmin(admin.ModelAdmin):
         }),
         ('Контактная информация', {
             'fields': ('phone', 'email', 'address')
+        }),
+        ('Согласие на обработку ПД', {
+            'fields': ('personal_data_consent', 'consent_at'),
+            'classes': ('collapse',),
         }),
         ('Уведомления', {
             'fields': ('telegram_notification_sent',),

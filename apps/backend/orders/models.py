@@ -75,6 +75,15 @@ class Order(BaseModel):
     phone = models.CharField(max_length=20, verbose_name='Телефон')
     email = models.EmailField(verbose_name='Email', blank=True)
     comment = models.TextField(blank=True, verbose_name='Комментарий к заказу')
+    personal_data_consent = models.BooleanField(
+        default=False,
+        verbose_name='Согласие на обработку ПД',
+    )
+    consent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Дата согласия на обработку ПД',
+    )
     is_deleted = models.BooleanField(default=False, verbose_name='Удален')
     telegram_notification_sent = models.BooleanField(default=False, verbose_name="Telegram уведомления об отправке")
 

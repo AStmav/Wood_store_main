@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { PERSONAL_DATA_POLICY_SLUG } from '../constants/legal.js';
 import './CookieBanner.css';
 
 const CookieBanner = () => {
@@ -7,7 +9,7 @@ const CookieBanner = () => {
 
   useEffect(() => {
     // Проверяем, дал ли пользователь согласие
-    const consent = localStorage.getItem('cookieConsent');
+    const consent = localStorage.getItem('cookie_consent_accepted') || localStorage.getItem('cookieConsent');
     if (!consent) {
       // Небольшая задержка для плавного появления
       setTimeout(() => {
@@ -18,6 +20,7 @@ const CookieBanner = () => {
   }, []);
 
   const acceptCookies = () => {
+    localStorage.setItem('cookie_consent_accepted', '1');
     localStorage.setItem('cookieConsent', 'accepted');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     hideBanner();
@@ -52,9 +55,9 @@ const CookieBanner = () => {
             <p className="cookie-banner__description">
               Мы используем cookies для улучшения работы сайта, анализа трафика и персонализации контента. 
               Продолжая использовать сайт, вы соглашаетесь с нашей{' '}
-              <a href="/privacy" className="cookie-banner__link">
-                политикой конфиденциальности
-              </a>.
+              <Link to={`/pages/${PERSONAL_DATA_POLICY_SLUG}`} className="cookie-banner__link">
+                пользовательским соглашением
+              </Link>.
             </p>
           </div>
         </div>

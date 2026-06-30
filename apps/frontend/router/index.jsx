@@ -11,8 +11,7 @@ import NewsDetail from '../src/pages/NewsDetail.jsx';
 import ProductDetail from '../src/pages/ProductDetail.jsx';
 import CategoryPage from '../src/pages/CategoryPage.jsx';
 import About from '../src/pages/About.jsx';
-import TermsOfService from '../src/pages/TermsOfService.jsx';
-import PrivacyPolicy from '../src/pages/PrivacyPolicy.jsx';
+import LegalPage, { TermsPage, PrivacyPage } from '../src/pages/LegalPage.jsx';
 
 export default function Router() {
   return (
@@ -23,8 +22,9 @@ export default function Router() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/pages/:slug" element={<LegalPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
         <Route path="/news/:slug" element={<NewsDetail />} />
         <Route path="/product/:uuid" element={<ProductDetail />} />

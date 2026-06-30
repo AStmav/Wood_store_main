@@ -10,8 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug')
     list_editable = ('sort_order', 'is_active')
     readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at')
-    autocomplete_fields = ()
-    raw_id_fields = ('parent',)
+    autocomplete_fields = ('parent',)
     ordering = ('sort_order', 'name')
 
     fieldsets = (

@@ -177,6 +177,7 @@ INSTALLED_APPS = [
     'orders.apps.OrdersConfig',
     'news.apps.NewsConfig',
     'about.apps.AboutConfig',  # Раздел "О нас"
+    'pages.apps.PagesConfig',
 ]
 
 MIDDLEWARE = [
@@ -190,6 +191,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',  # Временно отключено
 ]
+
+# Jazzmin related_modal_active открывает lookup в iframe на том же домене
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 ROOT_URLCONF = 'furniture_store.urls'
 

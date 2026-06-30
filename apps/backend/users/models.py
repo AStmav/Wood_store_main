@@ -35,6 +35,11 @@ class User(AbstractUser, BaseModel):
     first_name = models.CharField(max_length=30, blank=True, verbose_name='Имя')
     last_name = models.CharField(max_length=30, blank=True, verbose_name='Фамилия')
     phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
+    personal_data_consent_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Дата согласия на обработку ПД',
+    )
     is_active = models.BooleanField(default=True, verbose_name='Активен')
     is_staff = models.BooleanField(default=False, verbose_name='Сотрудник')
 

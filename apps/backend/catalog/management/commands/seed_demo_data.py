@@ -21,16 +21,42 @@ from orders.models import Delivery, Order, OrderItem, Payment
 from orders.services import OrderService
 from users.models import User
 
-CATEGORIES = [
-    ('Диваны и кресла', 'Мягкая мебель для гостиной и отдыха.'),
-    ('Столы и стулья', 'Обеденные и письменные комплекты из натурального дерева.'),
-    ('Шкафы и комоды', 'Системы хранения для спальни и гостиной.'),
-    ('Кровати и матрасы', 'Спальные гарнитуры и ортопедические матрасы.'),
-    ('Детская мебель', 'Безопасная мебель для детской комнаты.'),
-    ('Кухни', 'Кухонные гарнитуры и обеденные зоны.'),
-    ('Прихожие', 'Мебель для прихожей и коридора.'),
-    ('Офисная мебель', 'Столы, кресла и стеллажи для работы.'),
-]
+CATEGORY_TREE = {
+    'Диваны и кресла': {
+        'description': 'Мягкая мебель для гостиной и отдыха.',
+        'children': ['Диваны', 'Угловые диваны', 'Кресла', 'Пуфы'],
+    },
+    'Столы и стулья': {
+        'description': 'Обеденные и письменные комплекты из натурального дерева.',
+        'children': ['Обеденные столы', 'Письменные столы', 'Стулья', 'Журнальные столики'],
+    },
+    'Шкафы и комоды': {
+        'description': 'Системы хранения для спальни и гостиной.',
+        'children': ['Шкафы-купе', 'Комоды', 'Тумбы', 'Стеллажи'],
+    },
+    'Кровати и матрасы': {
+        'description': 'Спальные гарнитуры и ортопедические матрасы.',
+        'children': ['Кровати', 'Матрасы', 'Изголовья', 'Прикроватные тумбы'],
+    },
+    'Детская мебель': {
+        'description': 'Безопасная мебель для детской комнаты.',
+        'children': ['Детские кроватки', 'Детские столы', 'Детские шкафы', 'Детские стеллажи'],
+    },
+    'Кухни': {
+        'description': 'Кухонные гарнитуры и обеденные зоны.',
+        'children': ['Кухонные гарнитуры', 'Кухонные столы', 'Барные стойки', 'Кухонные стулья'],
+    },
+    'Прихожие': {
+        'description': 'Мебель для прихожей и коридора.',
+        'children': ['Гарнитуры прихожих', 'Обувницы', 'Вешалки', 'Банкетки'],
+    },
+    'Офисная мебель': {
+        'description': 'Столы, кресла и стеллажи для работы.',
+        'children': ['Офисные столы', 'Офисные кресла', 'Шкафы для документов', 'Офисные тумбы'],
+    },
+}
+
+BED_SLEEP_SIZES = ['90×200 см', '120×200 см', '140×200 см', '160×200 см', '180×200 см']
 
 MATERIALS = ['Дуб', 'Сосна', 'Бук', 'Ясень', 'Орех', 'Берёза', 'МДФ', 'Массив дерева']
 COLORS = ['Натуральный', 'Венге', 'Белый', 'Серый', 'Орех', 'Дуб молочный', 'Графит']
@@ -38,11 +64,11 @@ WOOD_PRODUCTS = {
     'Диваны и кресла': ['Диван', 'Кресло', 'Угловой диван', 'Пуф', 'Модульный диван'],
     'Столы и стулья': ['Обеденный стол', 'Письменный стол', 'Стул', 'Табурет', 'Журнальный столик'],
     'Шкафы и комоды': ['Шкаф-купе', 'Комод', 'Тумба', 'Стеллаж', 'Витрина'],
-    'Кровати и матрасы': ['Кровать двуспальная', 'Кровать односпальная', 'Матрас', 'Изголовье', 'Тумба прикроватная'],
-    'Детская мебель': ['Кроватка', 'Письменный стол', 'Шкаф', 'Комод', 'Стеллаж'],
-    'Кухни': ['Кухонный гарнитур', 'Обеденный стол', 'Барная стойка', 'Кухонный стул', 'Витрина'],
-    'Прихожие': ['Прихожая', 'Обувница', 'Вешалка', 'Зеркало', 'Банкетка'],
-    'Офисная мебель': ['Офисный стол', 'Офисное кресло', 'Шкаф для документов', 'Тумба', 'Стеллаж'],
+    'Кровати и матрасы': ['Кровать', 'Матрас', 'Изголовье', 'Прикроватная тумба'],
+    'Детская мебель': ['Детская кроватка', 'Детский стол', 'Детский шкаф', 'Детский комод'],
+    'Кухни': ['Кухонный гарнитур', 'Кухонный стол', 'Барная стойка', 'Кухонный стул'],
+    'Прихожие': ['Прихожая', 'Обувница', 'Вешалка', 'Банкетка'],
+    'Офисная мебель': ['Офисный стол', 'Офисное кресло', 'Шкаф для документов', 'Офисная тумба'],
 }
 
 NEWS_ITEMS = [
@@ -148,8 +174,9 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS(
-            f'Готово: {len(categories)} категорий, {len(products)} товаров, '
-            f'{News.objects.count()} новостей, {orders_count} заказов.'
+            f'Готово: {Category.objects.filter(parent__isnull=True).count()} корневых категорий, '
+            f'{Category.objects.filter(parent__isnull=False).count()} подкатегорий, '
+            f'{len(products)} товаров, {News.objects.count()} новостей, {orders_count} заказов.'
         ))
 
     def _clear_data(self):
@@ -165,14 +192,36 @@ class Command(BaseCommand):
         User.objects.filter(email__endswith='@demo.skazkindom.local').delete()
 
     def _create_categories(self):
-        categories = []
-        for name, description in CATEGORIES:
-            category, _ = Category.objects.get_or_create(
-                name=name,
-                defaults={'description': description, 'slug': make_slug(name, 'category')},
+        leaf_categories = []
+        for sort_order, (parent_name, meta) in enumerate(CATEGORY_TREE.items()):
+            parent, created = Category.objects.get_or_create(
+                name=parent_name,
+                defaults={
+                    'description': meta['description'],
+                    'sort_order': sort_order,
+                },
             )
-            categories.append(category)
-        return categories
+            if not created and parent.description != meta['description']:
+                parent.description = meta['description']
+                parent.sort_order = sort_order
+                parent.parent = None
+                parent.save()
+
+            for child_order, child_name in enumerate(meta['children']):
+                child, child_created = Category.objects.get_or_create(
+                    name=child_name,
+                    defaults={
+                        'description': f'{child_name} в разделе «{parent_name}»',
+                        'parent': parent,
+                        'sort_order': child_order,
+                    },
+                )
+                if not child_created:
+                    child.parent = parent
+                    child.sort_order = child_order
+                    child.save()
+                leaf_categories.append(child)
+        return leaf_categories
 
     def _create_products(self, categories, count, with_images):
         products = []
@@ -180,7 +229,8 @@ class Command(BaseCommand):
 
         while len(products) < count:
             category = random.choice(categories)
-            base_name = random.choice(WOOD_PRODUCTS[category.name])
+            parent_name = category.parent.name if category.parent_id else category.name
+            base_name = random.choice(WOOD_PRODUCTS.get(parent_name, ['Товар']))
             material = random.choice(MATERIALS)
             color = random.choice(COLORS)
             name = f'{base_name} «{material}» {color}'
@@ -198,6 +248,16 @@ class Command(BaseCommand):
             stock = random.randint(0, 40)
             rating = round(random.uniform(3.5, 5.0), 1)
 
+            specifications = {
+                'Материал': material,
+                'Цвет': color,
+                'Размеры': f'{width}x{depth}x{height} см',
+                'Страна': 'Россия',
+                'Гарантия': f'{random.choice([12, 24, 36])} мес.',
+            }
+            if category.name in ('Кровати', 'Матрасы', 'Детские кроватки'):
+                specifications['Размер спального места'] = random.choice(BED_SLEEP_SIZES)
+
             product = Product(
                 name=full_name,
                 description=(
@@ -210,13 +270,7 @@ class Command(BaseCommand):
                 rating=rating,
                 stock_quantity=stock,
                 is_available=stock > 0,
-                specifications={
-                    'Материал': material,
-                    'Цвет': color,
-                    'Размеры': f'{width}x{depth}x{height} см',
-                    'Страна': 'Россия',
-                    'Гарантия': f'{random.choice([12, 24, 36])} мес.',
-                },
+                specifications=specifications,
             )
             if with_images:
                 product.image = make_product_image(full_name)

@@ -1,3 +1,4 @@
+import { PERSONAL_DATA_POLICY_SLUG } from '../constants/legal.js';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { productService } from '../api/productService.js';
@@ -142,8 +143,10 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-2 text-sm">
+              <Link to={`/pages/${PERSONAL_DATA_POLICY_SLUG}`} className="text-gray-400 hover:text-white transition-colors">
+                Пользовательское соглашение
+              </Link>
               <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">Политика конфиденциальности</Link>
-              <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">Пользовательское соглашение</Link>
               <div className="text-gray-400 text-sm pt-2">
                 © 2024 Сказкин Дом. Все права защищены.
               </div>

@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from django.utils import timezone
+
+from pages.consent import CONSENT_REQUIRED_MESSAGE
 from .models import Order, OrderItem, Delivery, Payment, Cart, CartItem, Favorite
 from catalog.serializers import ProductListSerializer
 from catalog.services import ProductService
@@ -63,10 +66,19 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=False, allow_blank=True)
     address = serializers.CharField(required=False, allow_blank=True)
     comment = serializers.CharField(required=False, allow_blank=True)
+    personal_data_consent = serializers.BooleanField(write_only=True)
 
     class Meta:
         model = Order
-        fields = ('address', 'phone', 'email', 'comment', 'items', 'delivery_type', 'payment_method')
+        fields = (
+            'address', 'phone', 'email', 'comment', 'items',
+            'delivery_type', 'payment_method', 'personal_data_consent',
+        )
+
+    def validate_personal_data_consent(self, value):
+        if not value:
+            raise serializers.ValidationError(CONSENT_REQUIRED_MESSAGE)
+        return value
 
     def validate(self, data):
         if not data.get('phone'):

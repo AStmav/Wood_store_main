@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useOrders } from '../context/OrderContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatPrice } from '../utils/format.js';
+import PersonalDataConsent from './PersonalDataConsent.jsx';
 
 export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated }) {
   const { createOrder } = useOrders();
@@ -10,7 +10,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
   const [formData, setFormData] = useState({
     phone: '',
     comment: '',
-    agree: false,
+    personal_data_consent: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +21,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
       setFormData({
         phone: user?.phone || '',
         comment: '',
-        agree: false,
+        personal_data_consent: false,
       });
       setError('');
       setValidationErrors({});
@@ -31,16 +31,17 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
+    const fieldName = name === 'personal_data_consent' ? 'personal_data_consent' : name;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: newValue,
+      [fieldName]: newValue,
     }));
 
-    if (validationErrors[name]) {
+    if (validationErrors[fieldName]) {
       setValidationErrors((prev) => {
         const updated = { ...prev };
-        delete updated[name];
+        delete updated[fieldName];
         return updated;
       });
     }
@@ -59,8 +60,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
       errors.phone = 'Введите корректный номер телефона';
     }
 
-    if (!formData.agree) {
-      errors.agree = 'Необходимо принять согласие на обработку данных';
+    if (!formData.personal_data_consent) {
+      errors.personal_data_consent = 'Отметьте согласие на обработку персональных данных, чтобы отправить заявку.';
     }
 
     return errors;
@@ -88,6 +89,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
       const orderData = {
         phone: formData.phone.trim(),
         comment: formData.comment.trim(),
+        personal_data_consent: true,
         items: itemsPayload,
         delivery_type: 'pickup',
         payment_method: 'cash',
@@ -101,7 +103,16 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
         onOrderCreated(result.data);
         onClose();
       } else {
-        setError(result.error);
+        const apiError = result.error;
+        if (typeof apiError === 'object' && apiError?.personal_data_consent) {
+          setValidationErrors({
+            personal_data_consent: Array.isArray(apiError.personal_data_consent)
+              ? apiError.personal_data_consent[0]
+              : apiError.personal_data_consent,
+          });
+        } else {
+          setError(typeof apiError === 'string' ? apiError : 'Ошибка создания заказа');
+        }
       }
     } catch (err) {
       console.error('Error creating order:', err);
@@ -175,24 +186,11 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
                 />
               </div>
 
-              <label className="flex items-start text-sm text-gray-600 space-x-2">
-                <input
-                  type="checkbox"
-                  name="agree"
-                  checked={formData.agree}
-                  onChange={handleInputChange}
-                  className="mt-1"
-                />
-                <span>
-                  Я соглашаюсь на обработку моих персональных данных и ознакомлен с{' '}
-                  <Link to="/privacy" target="_blank" className="text-blue-600 hover:text-blue-700 underline">
-                    Политикой конфиденциальности
-                  </Link>
-                </span>
-              </label>
-              {validationErrors.agree && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.agree}</p>
-              )}
+              <PersonalDataConsent
+                checked={formData.personal_data_consent}
+                onChange={handleInputChange}
+                error={validationErrors.personal_data_consent}
+              />
             </div>
           </div>
 

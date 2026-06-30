@@ -40,6 +40,7 @@ class OrderService:
         items_data = validated_data.pop('items')
         delivery_type = validated_data.pop('delivery_type', 'pickup')
         payment_method = validated_data.pop('payment_method', 'cash')
+        validated_data.pop('personal_data_consent', None)
 
         phone = validated_data.get('phone')
         if not phone:
@@ -58,6 +59,8 @@ class OrderService:
         order = Order.objects.create(
             user=user if user and getattr(user, 'is_authenticated', False) else None,
             order_number=order_number,
+            personal_data_consent=True,
+            consent_at=timezone.now(),
             **validated_data
         )
         
