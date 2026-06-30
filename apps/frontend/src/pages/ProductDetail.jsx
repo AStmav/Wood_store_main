@@ -5,9 +5,7 @@ import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useFavorites } from '../context/FavoriteContext.jsx';
-import LoginPromptModal from '../components/LoginPromptModal.jsx';
 import { formatPrice } from '../utils/format.js';
 import { trackProductView } from '../api/analytics.js';
 
@@ -17,9 +15,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const { addToCart } = useCart();
-  const { user } = useAuth();
   const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
@@ -72,11 +68,6 @@ const ProductDetail = () => {
   };
 
   const handleToggleFavorite = async () => {
-    if (!user) {
-      setShowLoginModal(true);
-      return;
-    }
-
     try {
       const result = await toggleFavorite(product.uuid);
       if (result.success) {
@@ -296,11 +287,6 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      <LoginPromptModal
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        productName={product?.name || 'товар'}
-      />
     </Layout>
   );
 };

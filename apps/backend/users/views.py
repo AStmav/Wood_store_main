@@ -54,9 +54,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         Настраивает права доступа в зависимости от действия
         """
-        if self.action == 'create':
-            return [AllowAny()]
-        elif self.action in ['list', 'retrieve', 'update', 'partial_update', 'destroy']:
+        if self.action in ['create', 'list', 'retrieve', 'update', 'partial_update', 'destroy']:
             return [IsAdminUser()]
         return [IsAuthenticated()]
 

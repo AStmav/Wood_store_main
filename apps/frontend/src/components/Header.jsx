@@ -1,7 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { useOrders } from '../context/OrderContext.jsx';
 import { useFavorites } from '../context/FavoriteContext.jsx';
 import { useState, useEffect } from 'react';
 import CategoryDropdown from './CategoryDropdown.jsx';
@@ -9,9 +7,7 @@ import { productService } from '../api/productService.js';
 import logoImage from '../assets/images/logo.png';
 
 export default function Header() {
-  const { user, logout } = useAuth();
   const { cartItemsCount } = useCart();
-  const { ordersCount } = useOrders();
   const { favoritesCount } = useFavorites();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
@@ -65,13 +61,6 @@ export default function Header() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    closeMobileMenu();
-  };
-
-  // Функции для управления выпадающим меню
   const handleCatalogMouseEnter = () => {
     if (dropdownTimeout) {
       clearTimeout(dropdownTimeout);
@@ -188,56 +177,32 @@ export default function Header() {
                 onMouseLeave={handleDropdownMouseLeave}
               />
             </div>
-           
-            {user && (
-              <Link 
-                to="/orders" 
-                className="relative text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors"
-              >
-                Заказы
-                {ordersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                    {ordersCount}
-                  </span>
-                )}
-              </Link>
-            )}
-            {user && (
-              <Link 
-                to="/profile" 
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors"
-              >
-                Профиль
-              </Link>
-            )}
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Link 
-              to="/about" 
+            <Link
+              to="/about"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors"
             >
               О нас
             </Link>
-            
-            {user && (
-              <Link 
-                to="/favorites" 
-                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                title="Избранное"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                {favoritesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                    {favoritesCount}
-                  </span>
-                )}
-              </Link>
-            )}
-            
-            <Link 
+
+            <Link
+              to="/favorites"
+              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+              title="Избранное"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              {favoritesCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+                  {favoritesCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
               to="/cart" 
               className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
               title="Корзина"
@@ -251,41 +216,11 @@ export default function Header() {
                 </span>
               )}
             </Link>
-
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-lg text-gray-700">
-                  {user.first_name || user.email}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-lg font-medium transition-colors"
-                >
-                  Выйти
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors"
-                >
-                  Войти
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-lg font-medium transition-colors"
-                >
-                  Регистрация
-                </Link>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center space-x-3 md:hidden">
-            {user && (
-              <Link 
-                to="/favorites" 
+            <Link
+              to="/favorites" 
                 className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
                 title="Избранное"
                 onClick={closeMobileMenu}
@@ -297,10 +232,9 @@ export default function Header() {
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
                     {favoritesCount}
                   </span>
-                )}
-              </Link>
-            )}
-            <Link 
+              )}
+            </Link>
+            <Link
               to="/cart" 
               className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
               title="Корзина"
@@ -315,15 +249,6 @@ export default function Header() {
                 </span>
               )}
             </Link>
-            {!user && (
-              <Link
-                to="/login"
-                className="text-sm.font-medium text-blue-600 hover:text-blue-700"
-                onClick={closeMobileMenu}
-              >
-                Войти
-              </Link>
-            )}
           </div>
         </div>
       </div>
@@ -404,34 +329,18 @@ export default function Header() {
                 )}
               </div>
 
-              {user && (
-                <div className="space-y-3">
-                  <Link
-                    to="/orders"
-                    className="flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
-                    onClick={closeMobileMenu}
-                  >
-                    <span>Заказы</span>
-                    {ordersCount > 0 && (
-                      <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-500 px-2 text-xs font-semibold text-white">
-                        {ordersCount}
-                      </span>
-                    )}
-                  </Link>
-                  <Link
-                    to="/favorites"
-                    className="flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
-                    onClick={closeMobileMenu}
-                  >
-                    <span>Избранное</span>
-                    {favoritesCount > 0 && (
-                      <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white">
-                        {favoritesCount}
-                      </span>
-                    )}
-                  </Link>
-                </div>
-              )}
+              <Link
+                to="/favorites"
+                className="flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
+                onClick={closeMobileMenu}
+              >
+                <span>Избранное</span>
+                {favoritesCount > 0 && (
+                  <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white">
+                    {favoritesCount}
+                  </span>
+                )}
+              </Link>
 
               <Link
                 to="/cart"
@@ -445,16 +354,6 @@ export default function Header() {
                   </span>
                 )}
               </Link>
-
-              {user && (
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 rounded-lg bg-red-50 text-red-600 font-medium hover:bg-red-100"
-                >
-                  Выйти
-                </button>
-              )}
             </nav>
           </div>
         </>

@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '../context/FavoriteContext.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
 import Layout from '../components/Layout.jsx';
 
 export default function Favorites() {
   const { favorites, loading, toggleFavorite, fetchFavorites, initialized } = useFavorites();
-  const { user } = useAuth();
 
   // Обновляем данные только при первом заходе на страницу и если данные еще не инициализированы
   useEffect(() => {

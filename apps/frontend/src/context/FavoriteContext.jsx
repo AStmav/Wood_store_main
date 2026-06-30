@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { favoriteService } from '../api/favoriteService';
-import { useAuth } from './AuthContext';
 
 const FavoriteContext = createContext();
 
@@ -17,15 +16,14 @@ const FavoriteProvider = ({ children }) => {
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const { user } = useAuth();
 
-  // Загрузка избранных товаров
   const fetchFavorites = useCallback(async () => {
     try {
       setLoading(true);
       const response = await favoriteService.getFavoritesDetails();
-      setFavorites(response.data || []);
-      setFavoritesCount((response.data || []).length);
+      const items = response.data || [];
+      setFavorites(items);
+      setFavoritesCount(items.length);
     } catch (err) {
       console.error('Error fetching favorites:', err);
       setFavorites([]);
@@ -35,15 +33,11 @@ const FavoriteProvider = ({ children }) => {
     }
   }, []);
 
-  // Добавление/удаление товара из избранного
   const toggleFavorite = async (productId) => {
     try {
       setLoading(true);
       const response = await favoriteService.toggleFavorite(productId);
-      
-      // Обновляем список избранного после изменения
       await fetchFavorites();
-      
       return { success: true, isFavorite: response.status === 201 };
     } catch (err) {
       console.error('Error toggling favorite:', err);
@@ -53,39 +47,13 @@ const FavoriteProvider = ({ children }) => {
     }
   };
 
-  // Проверка, находится ли товар в избранном
-  const isFavorite = (productId) => {
-    return favorites.some(fav => fav.product.uuid === productId);
-  };
+  const isFavorite = (productId) => favorites.some((fav) => fav.product.uuid === productId);
 
-  // Синхронизация локальных избранных с сервером при входе пользователя
-  const syncLocalFavorites = useCallback(async () => {
-    if (user) {
-      try {
-        const response = await favoriteService.syncLocalToServer();
-        console.log('Synced local favorites:', response.data);
-        // Обновляем список избранного после синхронизации
-        await fetchFavorites();
-      } catch (error) {
-        console.error('Error syncing local favorites:', error);
-      }
-    }
-  }, [user, fetchFavorites]);
-
-  // Загружаем избранное при изменении пользователя
   useEffect(() => {
-    if (user && !initialized) {
-      // Сначала синхронизируем локальные данные, затем загружаем с сервера
-      syncLocalFavorites().then(() => {
-        fetchFavorites();
-        setInitialized(true);
-      });
-    } else if (!user && initialized) {
-      setFavorites([]);
-      setFavoritesCount(0);
-      setInitialized(false);
+    if (!initialized) {
+      fetchFavorites().finally(() => setInitialized(true));
     }
-  }, [user, initialized, fetchFavorites, syncLocalFavorites]);
+  }, [initialized, fetchFavorites]);
 
   const value = {
     favorites,
@@ -95,7 +63,6 @@ const FavoriteProvider = ({ children }) => {
     fetchFavorites,
     toggleFavorite,
     isFavorite,
-    syncLocalFavorites,
   };
 
   return (
@@ -105,6 +72,5 @@ const FavoriteProvider = ({ children }) => {
   );
 };
 
-// Экспорт для Vite HMR
 FavoriteProvider.displayName = 'FavoriteProvider';
 export { FavoriteProvider };

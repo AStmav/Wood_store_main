@@ -5,9 +5,8 @@ from rest_framework.test import APITestCase
 
 from catalog.models import Category, Product
 from orders.models import Order
-from pages.consent import CONSENT_REQUIRED_MESSAGE, is_personal_data_consent_given
+from pages.consent import is_personal_data_consent_given
 from pages.models import Page
-from users.models import User
 
 
 class PersonalDataConsentTests(TestCase):
@@ -75,28 +74,3 @@ class OrderConsentApiTests(APITestCase):
         order = Order.objects.get()
         self.assertTrue(order.personal_data_consent)
         self.assertIsNotNone(order.consent_at)
-
-
-class RegistrationConsentApiTests(APITestCase):
-    def test_registration_requires_personal_data_consent(self):
-        response = self.client.post('/api/users/', {
-            'email': 'user@example.com',
-            'password': 'StrongPass123!',
-            'password2': 'StrongPass123!',
-            'first_name': 'Иван',
-        }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('personal_data_consent', response.data)
-        self.assertEqual(User.objects.count(), 0)
-
-    def test_registration_saves_consent_timestamp(self):
-        response = self.client.post('/api/users/', {
-            'email': 'user@example.com',
-            'password': 'StrongPass123!',
-            'password2': 'StrongPass123!',
-            'first_name': 'Иван',
-            'personal_data_consent': True,
-        }, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        user = User.objects.get(email='user@example.com')
-        self.assertIsNotNone(user.personal_data_consent_at)

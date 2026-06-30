@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useOrders } from '../context/OrderContext.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
 import { formatPrice } from '../utils/format.js';
 import PersonalDataConsent from './PersonalDataConsent.jsx';
 
 export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated }) {
   const { createOrder } = useOrders();
-  const { user } = useAuth();
   const [formData, setFormData] = useState({
     phone: '',
     comment: '',
@@ -19,14 +17,14 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        phone: user?.phone || '',
+        phone: '',
         comment: '',
         personal_data_consent: false,
       });
       setError('');
       setValidationErrors({});
     }
-  }, [isOpen, user]);
+  }, [isOpen]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -94,7 +92,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderCreated })
         delivery_type: 'pickup',
         payment_method: 'cash',
         address: '',
-        email: user?.email || '',
+        email: '',
       };
 
       const result = await createOrder(orderData);
