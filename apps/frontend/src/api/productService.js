@@ -50,15 +50,21 @@ export const productService = {
     return response.data;
   },
 
-  // Получение категорий
+  // Получение категорий (дерево)
   getCategories: async () => {
-    const response = await api.get('catalog/categories/');
+    const response = await api.get('catalog/categories/tree/');
     return response.data;
   },
 
-  // Получение продуктов категории
-  getCategoryProducts: async (categoryUuid) => {
-    const response = await api.get(`catalog/categories/${categoryUuid}/products/`);
+  // Фильтры и метаданные категории
+  getCategoryFilters: async (categoryUuid) => {
+    const response = await api.get(`catalog/categories/${categoryUuid}/filters/`);
+    return response.data;
+  },
+
+  // Получение продуктов категории (с подкатегориями)
+  getCategoryProducts: async (categoryUuid, params = {}) => {
+    const response = await api.get(`catalog/categories/${categoryUuid}/products/`, { params });
     return response.data;
   },
 
@@ -97,6 +103,10 @@ export const buildSearchParams = (searchTerm, filters) => {
 
   if (filters.popularOnly) {
     params.popular_only = 'true';
+  }
+
+  if (filters.sleepSize) {
+    params.sleep_size = filters.sleepSize;
   }
 
   if (filters.ordering) {

@@ -9,6 +9,7 @@ import Favorites from '../src/pages/Favorites.jsx';
 import ProtectedRoute from '../src/pages/ProtectedRoute.jsx';
 import NewsDetail from '../src/pages/NewsDetail.jsx';
 import ProductDetail from '../src/pages/ProductDetail.jsx';
+import CategoryPage from '../src/pages/CategoryPage.jsx';
 import About from '../src/pages/About.jsx';
 import TermsOfService from '../src/pages/TermsOfService.jsx';
 import PrivacyPolicy from '../src/pages/PrivacyPolicy.jsx';
@@ -18,6 +19,7 @@ export default function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/catalog/:categoryUuid" element={<CategoryPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/about" element={<About />} />

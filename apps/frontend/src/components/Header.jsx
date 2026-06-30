@@ -6,7 +6,6 @@ import { useFavorites } from '../context/FavoriteContext.jsx';
 import { useState, useEffect } from 'react';
 import CategoryDropdown from './CategoryDropdown.jsx';
 import { productService } from '../api/productService.js';
-// Импорт логотипа
 import logoImage from '../assets/images/logo.png';
 
 export default function Header() {
@@ -104,8 +103,11 @@ export default function Header() {
 
   // Функция выбора категории из выпадающего меню
   const handleCategorySelect = (categoryUuid) => {
-    // Переходим на главную страницу с выбранной категорией
-    navigate('/', { state: { selectedCategory: categoryUuid } });
+    if (categoryUuid) {
+      navigate(`/catalog/${categoryUuid}`);
+    } else {
+      navigate('/');
+    }
     setIsDropdownVisible(false);
     setIsMobileMenuOpen(false);
     setIsMobileCatalogOpen(false);
@@ -372,10 +374,25 @@ export default function Header() {
                           <button
                             type="button"
                             onClick={() => handleCategorySelect(category.uuid)}
-                            className="w-full text-left px-4 py-2 rounded-md text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                            className="w-full text-left px-4 py-2 rounded-md text-gray-800 font-medium hover:bg-blue-50 hover:text-blue-700"
                           >
                             {category.name}
                           </button>
+                          {category.children?.length > 0 && (
+                            <ul className="ml-3 mt-1 space-y-1 border-l border-gray-100 pl-2">
+                              {category.children.map((child) => (
+                                <li key={child.uuid}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCategorySelect(child.uuid)}
+                                    className="w-full text-left px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                                  >
+                                    {child.name}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </li>
                       ))
                     ) : (

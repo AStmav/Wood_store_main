@@ -5,9 +5,24 @@ from .models import Category, Product
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'uuid', 'created_at', 'updated_at')
-    search_fields = ('name',)
-    readonly_fields = ('uuid', 'created_at', 'updated_at')
+    list_display = ('name', 'parent', 'sort_order', 'is_active', 'slug', 'created_at')
+    list_filter = ('is_active', 'parent')
+    search_fields = ('name', 'slug')
+    list_editable = ('sort_order', 'is_active')
+    readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at')
+    autocomplete_fields = ()
+    raw_id_fields = ('parent',)
+    ordering = ('sort_order', 'name')
+
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'description', 'parent', 'image', 'sort_order', 'is_active'),
+        }),
+        ('Системная информация', {
+            'fields': ('uuid', 'slug', 'created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
 
 class ProductAdminForm(forms.ModelForm):
     """Форма для товара с улучшенным полем характеристик"""

@@ -9,13 +9,50 @@ class Category(BaseModel):
     name = models.CharField(max_length=100, unique=True, verbose_name='Название категории')
     description = models.TextField(blank=True, verbose_name='Описание')
     slug = models.SlugField(max_length=100, unique=True, verbose_name='Slug')
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children',
+        verbose_name='Родительская категория',
+    )
+    sort_order = models.PositiveIntegerField(default=0, verbose_name='Порядок сортировки')
+    image = models.ImageField(
+        upload_to='categories/',
+        blank=True,
+        null=True,
+        verbose_name='Изображение',
+    )
+    is_active = models.BooleanField(default=True, verbose_name='Активна')
 
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+        ordering = ['sort_order', 'name']
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_root(self) -> bool:
+        return self.parent_id is None
+
+    @property
+    def is_leaf(self) -> bool:
+        return not self.children.filter(is_active=True).exists()
+
+    def get_descendant_pks(self) -> list[int]:
+        from .category_tree import get_descendant_pks
+        return get_descendant_pks(self)
+
+    def get_breadcrumbs(self) -> list['Category']:
+        chain = [self]
+        current = self
+        while current.parent_id:
+            current = current.parent
+            chain.insert(0, current)
+        return chain
 
     def save(self, *args, **kwargs):
         if self._should_regenerate_slug():

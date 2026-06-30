@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { flattenCategories } from '../utils/categoryUtils.js';
 
 const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,6 +66,8 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
     localFilters.popularOnly ||
     localFilters.ordering !== '-created_at';
 
+  const flatCategories = flattenCategories(categories);
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* Основная строка поиска */}
@@ -130,9 +133,9 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Все категории</option>
-                {categories?.map((category) => (
+                {flatCategories.map((category) => (
                   <option key={category.uuid} value={category.uuid}>
-                    {category.name}
+                    {category.label}
                   </option>
                 ))}
               </select>
