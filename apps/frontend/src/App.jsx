@@ -1,20 +1,17 @@
 import Router from '../router/index.jsx'
-import { CartProvider } from './context/CartContext.jsx'
+import { MyProductsProvider } from './context/MyProductsContext.jsx'
 import { OrderProvider } from './context/OrderContext.jsx'
-import { FavoriteProvider } from './context/FavoriteContext.jsx'
 import CookieBanner from './components/CookieBanner.jsx'
 import './App.css'
 
 function App() {
   return (
-    <CartProvider>
+    <MyProductsProvider>
       <OrderProvider>
-        <FavoriteProvider>
-          <Router />
-          <CookieBanner />
-        </FavoriteProvider>
+        <Router />
+        <CookieBanner />
       </OrderProvider>
-    </CartProvider>
+    </MyProductsProvider>
   )
 }
 

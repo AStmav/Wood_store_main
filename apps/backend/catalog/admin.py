@@ -53,7 +53,7 @@ class ProductAdminForm(forms.ModelForm):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ('name', 'slug', 'category', 'price', 'stock_quantity', 'is_available', 'stock_status', 'rating', 'created_at')
+    list_display = ('name', 'slug', 'category', 'price', 'price_on_request', 'stock_quantity', 'is_available', 'stock_status', 'rating', 'created_at')
     list_filter = ('category', 'is_available', 'created_at')
     search_fields = ('name', 'description', 'slug')
     readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at', 'stock_status')
@@ -63,7 +63,8 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('name', 'description', 'category', 'image')
         }),
         ('Цена и рейтинг', {
-            'fields': ('price', 'rating')
+            'fields': ('price_on_request', 'price', 'rating'),
+            'description': 'Включите «Цена по запросу», чтобы скрыть цену на сайте. Поле «Цена» можно оставить для ориентира менеджера.',
         }),
         ('Характеристики товара', {
             'fields': ('specifications',),

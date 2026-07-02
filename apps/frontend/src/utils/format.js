@@ -12,3 +12,10 @@ export const formatPrice = (value) => {
     maximumFractionDigits: 0,
   }).format(numberValue);
 };
+
+export const formatProductPrice = (product) => {
+  if (product?.price_on_request) {
+    return 'Цена по запросу';
+  }
+  return `от ${formatPrice(product.price)} ₽`;
+};

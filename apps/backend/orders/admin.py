@@ -19,9 +19,9 @@ class PaymentInline(admin.StackedInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'get_status_display_colored', 'get_delivery_type', 'get_total_amount', 'get_telegram_status', 'created_at', 'get_is_deleted_display')
-    list_filter = ('status', 'delivery__delivery_type', 'telegram_notification_sent', 'created_at', 'is_deleted')
-    search_fields = ('id', 'user__email', 'user__phone', 'address', 'order_number')
+    list_display = ('id', 'phone', 'email', 'get_status_display_colored', 'get_total_amount', 'get_telegram_status', 'created_at', 'get_is_deleted_display')
+    list_filter = ('status', 'telegram_notification_sent', 'created_at', 'is_deleted')
+    search_fields = ('id', 'user__email', 'user__phone', 'customer_name', 'phone', 'address', 'order_number')
     readonly_fields = (
         'total_amount', 'created_at', 'updated_at', 'order_number',
         'telegram_notification_sent', 'personal_data_consent', 'consent_at',
@@ -31,10 +31,11 @@ class OrderAdmin(admin.ModelAdmin):
     # Группировка полей в админке
     fieldsets = (
         ('Основная информация', {
-            'fields': ('user', 'order_number', 'status', 'total_amount')
+            'fields': ('order_number', 'status', 'total_amount'),
+            'description': 'Сумма — ориентир по прайсу для менеджера, не финальная цена для клиента.',
         }),
         ('Контактная информация', {
-            'fields': ('phone', 'email', 'address')
+            'fields': ('customer_name', 'phone', 'email', 'address', 'user'),
         }),
         ('Согласие на обработку ПД', {
             'fields': ('personal_data_consent', 'consent_at'),
@@ -71,7 +72,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     def get_total_amount(self, obj):
         return f"{obj.total_amount} ₽"
-    get_total_amount.short_description = 'Общая сумма'
+    get_total_amount.short_description = 'Ориентир по прайсу'
     get_total_amount.admin_order_field = 'total_amount'
     
     def get_is_deleted_display(self, obj):

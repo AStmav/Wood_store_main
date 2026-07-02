@@ -1,7 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../src/pages/Home.jsx';
-import Cart from '../src/pages/Cart.jsx';
-import Favorites from '../src/pages/Favorites.jsx';
+import MyProducts from '../src/pages/MyProducts.jsx';
 import NewsDetail from '../src/pages/NewsDetail.jsx';
 import ProductDetail from '../src/pages/ProductDetail.jsx';
 import CategoryPage from '../src/pages/CategoryPage.jsx';
@@ -18,10 +17,11 @@ export default function Router() {
         <Route path="/pages/:slug" element={<LegalPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/my-products" element={<MyProducts />} />
+        <Route path="/cart" element={<Navigate to="/my-products" replace />} />
+        <Route path="/favorites" element={<Navigate to="/my-products" replace />} />
         <Route path="/news/:slug" element={<NewsDetail />} />
         <Route path="/product/:uuid" element={<ProductDetail />} />
-        <Route path="/cart" element={<Cart />} />
       </Routes>
     </BrowserRouter>
   );

@@ -54,6 +54,7 @@ class OrderConsentApiTests(APITestCase):
     def _order_payload(self, with_consent=True):
         payload = {
             'phone': '+79141023232',
+            'email': 'client@example.com',
             'items': [{'product_id': str(self.product.uuid), 'quantity': 1}],
             'delivery_type': 'pickup',
             'payment_method': 'cash',

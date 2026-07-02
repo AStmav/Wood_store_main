@@ -3,7 +3,7 @@ JAZZMIN_SETTINGS = {
     'site_header': 'Сказкин Дом',
     'site_brand': 'Сказкин Дом',
     'site_logo_classes': 'img-circle',
-    'welcome_sign': 'Панель управления интернет-магазином',
+    'welcome_sign': 'Панель управления магазином',
     'copyright': 'Сказкин Дом',
     'search_model': [
         'catalog.Product',
@@ -23,7 +23,7 @@ JAZZMIN_SETTINGS = {
     'show_sidebar': True,
     'navigation_expanded': True,
     'hide_apps': [],
-    'hide_models': [],
+    'hide_models': ['orders.Cart', 'orders.CartItem', 'orders.Favorite'],
     'order_with_respect_to': [
         'catalog',
         'orders',
@@ -42,7 +42,7 @@ JAZZMIN_SETTINGS = {
         'users.User': 'fas fa-user-circle',
         'catalog.Category': 'fas fa-folder',
         'catalog.Product': 'fas fa-couch',
-        'orders.Order': 'fas fa-shopping-cart',
+        'orders.Order': 'fas fa-clipboard-list',
         'orders.Cart': 'fas fa-shopping-basket',
         'orders.Favorite': 'fas fa-heart',
         'news.News': 'fas fa-newspaper',

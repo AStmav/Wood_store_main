@@ -228,32 +228,29 @@ class TelegramService:
 
     def _format_order_message(self, order):
         """Форматированное сообщение о заказе"""
-        # Получаем имя клиента. Для гостей используем телефон
-        if order.user:
-            customer_name = order.user.get_full_name() or order.user.email or order.phone
-        else:
-            customer_name = order.phone
-        
-        message = f"""
-🛒 <b>НОВЫЙ ЗАКАЗ #{order.id}</b>
+        contact_line = ''
+        if order.customer_name:
+            contact_line = f"👤 <b>Клиент:</b> {order.customer_name}\n"
 
-👤 <b>Клиент:</b> {customer_name}
-📞 <b>Телефон:</b> {order.phone}
+        message = f"""
+📋 <b>НОВАЯ ЗАЯВКА НА РАСЧЁТ #{order.id}</b>
+
+{contact_line}📞 <b>Телефон:</b> {order.phone}
 📧 <b>Email:</b> {order.email or 'Не указан'}
 📍 <b>Адрес:</b> {order.address or 'Не указан'}
 
-💰 <b>Сумма заказа:</b> {order.total_amount} ₽
+💰 <b>Ориентир по прайсу:</b> {order.total_amount} ₽
 📅 <b>Дата:</b> {order.created_at.strftime('%d.%m.%Y %H:%M')}
 
-🛍️ <b>Товары:</b>
+🛍️ <b>Интересуется:</b>
 """
         
         for item in order.items.all():
-            message += f"• {item.product.name} x{item.quantity} - {item.price} ₽\n"
+            message += f"✔ {item.product.name}\n"
         
         message += f"""
 📝 <b>Комментарий:</b> {order.comment or 'Нет комментария'}
 
-🔗 <b>Ссылка на заказ:</b> http://localhost:8000/admin/orders/order/{order.id}/
+🔗 <b>Ссылка на заявку:</b> http://localhost:8000/admin/orders/order/{order.id}/
 """
         return message

@@ -12,13 +12,13 @@ const OrderSuccessModal = ({ isOpen, onClose, orderNumber }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Заказ отправлен менеджеру</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Заявка отправлена</h2>
         <p className="text-gray-600 mb-4">
-          Спасибо! Мы уже получили ваш заказ. Менеджер свяжется с вами для уточнения деталей в ближайшее время.
+          Спасибо! Менеджер получил ваш запрос на расчёт и свяжется с вами в ближайшее время.
         </p>
         {orderNumber && (
-          <div className="mb-6 inline-flex items-center.justify-center rounded-lg bg-blue-50 px-4 py-2 text-blue-700 font-medium">
-            Номер заказа: {orderNumber}
+          <div className="mb-6 inline-flex items-center justify-center rounded-lg bg-blue-50 px-4 py-2 text-blue-700 font-medium">
+            Номер заявки: {orderNumber}
           </div>
         )}
         <div className="flex flex-col space-y-3">
@@ -27,7 +27,7 @@ const OrderSuccessModal = ({ isOpen, onClose, orderNumber }) => {
             className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors"
             onClick={onClose}
           >
-            Вернуться к покупкам
+            Вернуться в каталог
           </Link>
           <button
             type="button"

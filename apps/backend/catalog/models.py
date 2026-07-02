@@ -76,6 +76,11 @@ class Product(BaseModel):
     name = models.CharField(max_length=200, verbose_name='Название товара')
     description = models.TextField(blank=True, verbose_name='Описание товара')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')
+    price_on_request = models.BooleanField(
+        default=False,
+        verbose_name='Цена по запросу',
+        help_text='Если включено, на сайте вместо цены показывается «Цена по запросу»',
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,

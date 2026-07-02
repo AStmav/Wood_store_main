@@ -1,14 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useCart } from '../context/CartContext.jsx';
-import { useFavorites } from '../context/FavoriteContext.jsx';
+import { useMyProducts } from '../context/MyProductsContext.jsx';
 import { useState, useEffect } from 'react';
 import CategoryDropdown from './CategoryDropdown.jsx';
 import { productService } from '../api/productService.js';
 import logoImage from '../assets/images/logo.png';
 
 export default function Header() {
-  const { cartItemsCount } = useCart();
-  const { favoritesCount } = useFavorites();
+  const { itemsCount } = useMyProducts();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -16,7 +14,6 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCatalogOpen, setIsMobileCatalogOpen] = useState(false);
 
-  // Загрузка категорий при монтировании компонента
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -28,8 +25,7 @@ export default function Header() {
     };
 
     loadCategories();
-    
-    // Очистка таймера при размонтировании
+
     return () => {
       if (dropdownTimeout) {
         clearTimeout(dropdownTimeout);
@@ -72,7 +68,7 @@ export default function Header() {
   const handleCatalogMouseLeave = () => {
     const timeout = setTimeout(() => {
       setIsDropdownVisible(false);
-    }, 200); // Задержка 200мс для плавного UX
+    }, 200);
     setDropdownTimeout(timeout);
   };
 
@@ -90,7 +86,6 @@ export default function Header() {
     setDropdownTimeout(timeout);
   };
 
-  // Функция выбора категории из выпадающего меню
   const handleCategorySelect = (categoryUuid) => {
     if (categoryUuid) {
       navigate(`/catalog/${categoryUuid}`);
@@ -115,6 +110,24 @@ export default function Header() {
     setIsMobileCatalogOpen((prev) => !prev);
   };
 
+  const myProductsLink = (
+    <Link
+      to="/my-products"
+      className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+      title="Мои товары"
+      onClick={closeMobileMenu}
+    >
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+      {itemsCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
+          {itemsCount}
+        </span>
+      )}
+    </Link>
+  );
+
   return (
     <header className="bg-white shadow-sm border-b relative z-50">
       <div className="container mx-auto px-4">
@@ -138,9 +151,9 @@ export default function Header() {
             </button>
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 flex items-center justify-center">
-                <img 
-                  src={logoImage} 
-                  alt="Сказкин дом" 
+                <img
+                  src={logoImage}
+                  alt="Сказкин дом"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -149,26 +162,26 @@ export default function Header() {
           </div>
 
           <nav className="hidden md:flex space-x-8">
-            <div 
+            <div
               className="relative"
               onMouseEnter={handleCatalogMouseEnter}
               onMouseLeave={handleCatalogMouseLeave}
             >
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors cursor-pointer flex items-center"
               >
                 Каталог
-                <svg 
-                  className="w-4 h-4 ml-1 text-gray-400 group-hover:text-blue-600 transition-colors duration-200" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-4 h-4 ml-1 text-gray-400 group-hover:text-blue-600 transition-colors duration-200"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </Link>
-              
+
               <CategoryDropdown
                 categories={categories}
                 onCategorySelect={handleCategorySelect}
@@ -186,69 +199,11 @@ export default function Header() {
             >
               О нас
             </Link>
-
-            <Link
-              to="/favorites"
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-              title="Избранное"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              {favoritesCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                  {favoritesCount}
-                </span>
-              )}
-            </Link>
-
-            <Link
-              to="/cart" 
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-              title="Корзина"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-              </svg>
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
+            {myProductsLink}
           </div>
 
           <div className="flex items-center space-x-3 md:hidden">
-            <Link
-              to="/favorites" 
-                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                title="Избранное"
-                onClick={closeMobileMenu}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                {favoritesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                    {favoritesCount}
-                  </span>
-              )}
-            </Link>
-            <Link
-              to="/cart" 
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-              title="Корзина"
-              onClick={closeMobileMenu}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-              </svg>
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
+            {myProductsLink}
           </div>
         </div>
       </div>
@@ -330,27 +285,14 @@ export default function Header() {
               </div>
 
               <Link
-                to="/favorites"
+                to="/my-products"
                 className="flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
                 onClick={closeMobileMenu}
               >
-                <span>Избранное</span>
-                {favoritesCount > 0 && (
+                <span>Мои товары</span>
+                {itemsCount > 0 && (
                   <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white">
-                    {favoritesCount}
-                  </span>
-                )}
-              </Link>
-
-              <Link
-                to="/cart"
-                className="flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
-                onClick={closeMobileMenu}
-              >
-                <span>Корзина</span>
-                {cartItemsCount > 0 && (
-                  <span className="ml-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 text-xs font-semibold text-white">
-                    {cartItemsCount}
+                    {itemsCount}
                   </span>
                 )}
               </Link>
@@ -360,4 +302,4 @@ export default function Header() {
       )}
     </header>
   );
-} 
+}

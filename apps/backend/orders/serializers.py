@@ -51,7 +51,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('uuid', 'order_number', 'status', 'total_amount', 'address', 'phone', 'email', 
+        fields = ('uuid', 'order_number', 'status', 'total_amount', 'address', 'phone', 'customer_name', 'email', 
                  'comment', 'items', 'delivery', 'payment', 'created_at', 'updated_at')
         read_only_fields = ('uuid', 'order_number', 'status', 'total_amount', 'created_at', 'updated_at')
 
@@ -63,15 +63,16 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
     delivery_type = serializers.ChoiceField(choices=Delivery.DELIVERY_TYPES, required=False, default='pickup')
     payment_method = serializers.ChoiceField(choices=Payment.PAYMENT_METHODS, required=False, default='cash')
-    email = serializers.EmailField(required=False, allow_blank=True)
+    email = serializers.EmailField()
     address = serializers.CharField(required=False, allow_blank=True)
     comment = serializers.CharField(required=False, allow_blank=True)
+    customer_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     personal_data_consent = serializers.BooleanField(write_only=True)
 
     class Meta:
         model = Order
         fields = (
-            'address', 'phone', 'email', 'comment', 'items',
+            'address', 'phone', 'customer_name', 'email', 'comment', 'items',
             'delivery_type', 'payment_method', 'personal_data_consent',
         )
 
@@ -83,6 +84,9 @@ class OrderCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not data.get('phone'):
             raise serializers.ValidationError({'phone': 'Номер телефона обязателен'})
+        if not data.get('email', '').strip():
+            raise serializers.ValidationError({'email': 'Укажите email'})
+        data.setdefault('customer_name', '')
         return data
 
 class CartItemSerializer(serializers.ModelSerializer):

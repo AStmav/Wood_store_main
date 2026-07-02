@@ -57,24 +57,25 @@ class CartItem(BaseModel):
 
 class Order(BaseModel):
     """
-    Модель заказа
+    Заявка на расчёт от клиента
     """
     STATUS_CHOICES = [
-        ('new', 'Новый'),
-        ('processing', 'В обработке'),
-        ('shipped', 'Отправлен'),
-        ('delivered', 'Доставлен'),
-        ('cancelled', 'Отменен'),
+        ('new', 'Новая заявка'),
+        ('processing', 'Менеджер в работе'),
+        ('shipped', 'Расчёт отправлен'),
+        ('delivered', 'Закрыта'),
+        ('cancelled', 'Отменена'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='orders', verbose_name='Пользователь', null=True, blank=True)
-    order_number = models.CharField(max_length=20, blank=True, verbose_name='Номер заказа')
+    order_number = models.CharField(max_length=20, blank=True, verbose_name='Номер заявки')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', verbose_name='Статус')
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Общая сумма')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Ориентир по прайсу')
     address = models.TextField(blank=True, null=True, verbose_name='Адрес доставки')
     phone = models.CharField(max_length=20, verbose_name='Телефон')
+    customer_name = models.CharField(max_length=150, blank=True, verbose_name='Имя клиента')
     email = models.EmailField(verbose_name='Email', blank=True)
-    comment = models.TextField(blank=True, verbose_name='Комментарий к заказу')
+    comment = models.TextField(blank=True, verbose_name='Комментарий клиента')
     personal_data_consent = models.BooleanField(
         default=False,
         verbose_name='Согласие на обработку ПД',
@@ -88,13 +89,13 @@ class Order(BaseModel):
     telegram_notification_sent = models.BooleanField(default=False, verbose_name="Telegram уведомления об отправке")
 
     class Meta:
-        verbose_name = 'Заказ'
-        verbose_name_plural = 'Заказы'
+        verbose_name = 'Заявка'
+        verbose_name_plural = 'Заявки'
         ordering = ['-created_at']
 
     def __str__(self):
-        owner = self.user.email if self.user else self.phone
-        return f'Заказ {self.order_number} ({owner})'
+        owner = self.customer_name or (self.user.email if self.user else self.phone)
+        return f'Заявка {self.order_number} ({owner})'
 
     def calculate_total(self):
         """Расчет общей суммы заказа"""
@@ -118,11 +119,11 @@ class Order(BaseModel):
     def get_status_color(self):
         """Получение цвета для статуса заказа"""
         colors = {
-            'new': '#28a745',        # Зеленый - новый
-            'processing': '#ffc107',  # Желтый - в обработке
-            'shipped': '#17a2b8',     # Голубой - отправлен
-            'delivered': '#007bff',   # Синий - доставлен
-            'cancelled': '#dc3545',   # Красный - отменен
+            'new': '#28a745',
+            'processing': '#ffc107',
+            'shipped': '#17a2b8',
+            'delivered': '#007bff',
+            'cancelled': '#dc3545',
         }
         return colors.get(self.status, '#6c757d')  # Серый по умолчанию
     
@@ -135,7 +136,7 @@ class OrderItem(BaseModel):
     """
     Модель элемента заказа
     """
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name='Заказ')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name='Заявка')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар')
     quantity = models.PositiveIntegerField(default=1, verbose_name='Количество')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена за единицу')

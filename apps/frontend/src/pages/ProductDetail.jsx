@@ -4,9 +4,8 @@ import { productService } from '../api/productService.js';
 import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
-import { useCart } from '../context/CartContext.jsx';
-import { useFavorites } from '../context/FavoriteContext.jsx';
-import { formatPrice } from '../utils/format.js';
+import { useMyProducts } from '../context/MyProductsContext.jsx';
+import { formatProductPrice } from '../utils/format.js';
 import { trackProductView } from '../api/analytics.js';
 
 const ProductDetail = () => {
@@ -14,9 +13,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const [showMessage, setShowMessage] = useState(null);
+  const { addProduct, isInMyProducts, removeProduct, items } = useMyProducts();
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -54,30 +52,22 @@ const ProductDetail = () => {
     }
   }, [product?.uuid]);
 
-  const handleAddToCart = async () => {
-    console.log('Adding to cart:', product.uuid, product.name, quantity);
-    const result = await addToCart(product.uuid, quantity);
-    console.log('Add to cart result:', result);
+  const inMyProducts = isInMyProducts(product?.uuid);
+
+  const handleAddToMyProducts = async () => {
+    const result = await addProduct(product.uuid);
     if (result.success) {
-      console.log('Successfully added to cart');
-      // Можно добавить уведомление об успехе
+      setShowMessage(result.alreadyAdded ? 'Товар уже в списке' : 'Товар добавлен в «Мои товары»');
     } else {
-      console.error('Failed to add to cart:', result.error);
-      // Можно добавить уведомление об ошибке
+      setShowMessage(result.error || 'Не удалось добавить товар');
     }
   };
 
-  const handleToggleFavorite = async () => {
-    try {
-      const result = await toggleFavorite(product.uuid);
-      if (result.success) {
-        console.log(result.isFavorite ? 'Added to favorites' : 'Removed from favorites');
-      } else {
-        console.error('Failed to toggle favorite:', result.error);
-      }
-    } catch (error) {
-      console.error('Error in handleToggleFavorite:', error);
-    }
+  const handleRemoveFromMyProducts = async () => {
+    const item = items.find((entry) => entry.product?.uuid === product.uuid);
+    if (!item) return;
+    await removeProduct(item.uuid);
+    setShowMessage('Товар убран из списка');
   };
 
   if (loading) {
@@ -196,12 +186,12 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* Цена и добавление в корзину */}
+              {/* Цена и добавление в список */}
               <div className="border-t pt-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <span className="text-3xl font-bold text-gray-900 whitespace-nowrap">
-                      {formatPrice(product.price)} ₽
+                      {formatProductPrice(product)}
                     </span>
                     {product.available !== undefined && (
                       <div className="text-sm text-gray-500 mt-1">
@@ -219,55 +209,40 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <label htmlFor="quantity" className="text-sm font-medium text-gray-700">
-                      Количество:
-                    </label>
-                    <input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      max={product.stock_quantity || 10}
-                      value={quantity}
-                      onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                      className="w-16 px-2 py-1 border border-gray-300 rounded-md text-center"
-                    />
-                  </div>
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  {inMyProducts ? (
+                    <>
+                      <Link
+                        to="/my-products"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center"
+                      >
+                        Перейти в мои товары
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={handleRemoveFromMyProducts}
+                        className="px-6 py-3 rounded-lg text-lg font-medium border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Убрать из списка
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleAddToMyProducts}
+                      disabled={!product.available}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>{product.available ? 'В мои товары' : 'Нет в наличии'}</span>
+                    </button>
+                  )}
                 </div>
-
-                {/* Кнопки действий */}
-                <div className="flex space-x-3 mt-4">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!product.available}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                    </svg>
-                    <span>
-                      {product.available ? 'В корзину' : 'Нет в наличии'}
-                    </span>
-                  </button>
-                  
-                  <button
-                    onClick={handleToggleFavorite}
-                    className={`px-6 py-3 rounded-lg text-lg font-medium transition-all duration-200 flex items-center justify-center space-x-2 border-2 ${
-                      isFavorite(product.uuid)
-                        ? 'bg-red-500 text-white border-red-500 hover:bg-red-600'
-                        : 'bg-white text-red-500 border-red-500 hover:bg-red-50'
-                    }`}
-                    title={isFavorite(product.uuid) ? 'Удалить из избранного' : 'Добавить в избранное'}
-                  >
-                    <svg className="w-5 h-5" fill={isFavorite(product.uuid) ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    <span>
-                      {isFavorite(product.uuid) ? 'В избранном' : 'В избранное'}
-                    </span>
-                  </button>
-                </div>
+                <p className="text-sm text-gray-500 mt-3">
+                  Добавьте товар в список и отправьте запрос — менеджер рассчитает стоимость и свяжется с вами.
+                </p>
               </div>
             </div>
           </div>
@@ -287,6 +262,23 @@ const ProductDetail = () => {
         </div>
       </div>
 
+      {showMessage && (
+        <div className="fixed bottom-6 inset-x-0 flex justify-center z-50">
+          <div className="bg-white shadow-lg px-4 py-3 rounded-lg text-gray-800 flex items-center space-x-3">
+            <span>{showMessage}</span>
+            <button
+              type="button"
+              onClick={() => setShowMessage(null)}
+              className="text-gray-500 hover:text-gray-700"
+              aria-label="Закрыть уведомление"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
