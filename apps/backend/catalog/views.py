@@ -23,7 +23,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     lookup_field = 'uuid'
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'search', 'filters', 'bestsellers']:
+        if self.action in ['list', 'retrieve', 'search', 'filters', 'featured']:
             return [AllowAny()]
         return [IsAdminUser()]
 
@@ -76,25 +76,12 @@ class ProductViewSet(viewsets.ModelViewSet):
         data['related_products'] = ProductListSerializer(related_products, many=True).data
         return Response(data)
 
-    @action(detail=False, methods=['post'])
-    def rate(self, request):
-        product_id = request.data.get('product_id')
-        rating = request.data.get('rating')
-        try:
-            product = ProductService.rate_product(product_id, rating)
-            return Response(ProductDetailSerializer(product).data, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
     @action(detail=False, methods=['get'])
-    def bestsellers(self, request):
-        min_rating = float(request.query_params.get('min_rating', 4.0))
+    def featured(self, request):
         limit = int(request.query_params.get('limit', 6))
         queryset = Product.objects.filter(
-            rating__gte=min_rating,
             is_available=True,
-            stock_quantity__gt=0,
-        ).select_related('category').order_by('-rating', '-created_at')[:limit]
+        ).select_related('category').order_by('-created_at')[:limit]
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 

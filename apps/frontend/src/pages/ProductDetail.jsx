@@ -148,17 +148,6 @@ const ProductDetail = () => {
                     {product.category.name}
                   </p>
                 )}
-                <div className="flex items-center space-x-2 mb-4">
-                  {product.rating ? (
-                    <div className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-semibold">
-                      ⭐ {product.rating} Рейтинг
-                    </div>
-                  ) : (
-                    <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-sm font-semibold">
-                      📊 Рейтинг не указан
-                    </div>
-                  )}
-                </div>
               </div>
 
               {/* Описание */}
@@ -193,19 +182,6 @@ const ProductDetail = () => {
                     <span className="text-3xl font-bold text-gray-900 whitespace-nowrap">
                       {formatProductPrice(product)}
                     </span>
-                    {product.available !== undefined && (
-                      <div className="text-sm text-gray-500 mt-1">
-                        {product.available ? (
-                          <span className="text-green-600">
-                            В наличии
-                          </span>
-                        ) : (
-                          <span className="text-red-600">
-                            Нет в наличии
-                          </span>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -230,13 +206,12 @@ const ProductDetail = () => {
                     <button
                       type="button"
                       onClick={handleAddToMyProducts}
-                      disabled={!product.available}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span>{product.available ? 'В мои товары' : 'Нет в наличии'}</span>
+                      <span>В мои товары</span>
                     </button>
                   )}
                 </div>

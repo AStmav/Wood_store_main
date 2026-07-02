@@ -245,8 +245,6 @@ class Command(BaseCommand):
             depth = random.randint(40, 90)
             height = random.randint(45, 220)
             price = Decimal(random.randint(3500, 185000))
-            stock = random.randint(0, 40)
-            rating = round(random.uniform(3.5, 5.0), 1)
 
             specifications = {
                 'Материал': material,
@@ -267,9 +265,7 @@ class Command(BaseCommand):
                 ),
                 price=price,
                 category=category,
-                rating=rating,
-                stock_quantity=stock,
-                is_available=stock > 0,
+                is_available=True,
                 specifications=specifications,
             )
             if with_images:

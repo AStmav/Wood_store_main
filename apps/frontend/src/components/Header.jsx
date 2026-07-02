@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
 import { useState, useEffect } from 'react';
-import CategoryDropdown from './CategoryDropdown.jsx';
+import CatalogMegaMenu from './CatalogMegaMenu.jsx';
+import MobileCatalogMenu from './MobileCatalogMenu.jsx';
 import { productService } from '../api/productService.js';
 import logoImage from '../assets/images/logo.png';
 
@@ -9,8 +10,8 @@ export default function Header() {
   const { itemsCount } = useMyProducts();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [dropdownTimeout, setDropdownTimeout] = useState(null);
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [megaMenuTimeout, setMegaMenuTimeout] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCatalogOpen, setIsMobileCatalogOpen] = useState(false);
 
@@ -27,8 +28,8 @@ export default function Header() {
     loadCategories();
 
     return () => {
-      if (dropdownTimeout) {
-        clearTimeout(dropdownTimeout);
+      if (megaMenuTimeout) {
+        clearTimeout(megaMenuTimeout);
       }
     };
   }, []);
@@ -57,33 +58,26 @@ export default function Header() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleCatalogMouseEnter = () => {
-    if (dropdownTimeout) {
-      clearTimeout(dropdownTimeout);
-      setDropdownTimeout(null);
+  const openMegaMenu = () => {
+    if (megaMenuTimeout) {
+      clearTimeout(megaMenuTimeout);
+      setMegaMenuTimeout(null);
     }
-    setIsDropdownVisible(true);
+    setIsMegaMenuOpen(true);
   };
 
-  const handleCatalogMouseLeave = () => {
+  const scheduleCloseMegaMenu = () => {
     const timeout = setTimeout(() => {
-      setIsDropdownVisible(false);
+      setIsMegaMenuOpen(false);
     }, 200);
-    setDropdownTimeout(timeout);
+    setMegaMenuTimeout(timeout);
   };
 
-  const handleDropdownMouseEnter = () => {
-    if (dropdownTimeout) {
-      clearTimeout(dropdownTimeout);
-      setDropdownTimeout(null);
+  const cancelCloseMegaMenu = () => {
+    if (megaMenuTimeout) {
+      clearTimeout(megaMenuTimeout);
+      setMegaMenuTimeout(null);
     }
-  };
-
-  const handleDropdownMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setIsDropdownVisible(false);
-    }, 200);
-    setDropdownTimeout(timeout);
   };
 
   const handleCategorySelect = (categoryUuid) => {
@@ -92,7 +86,7 @@ export default function Header() {
     } else {
       navigate('/');
     }
-    setIsDropdownVisible(false);
+    setIsMegaMenuOpen(false);
     setIsMobileMenuOpen(false);
     setIsMobileCatalogOpen(false);
   };
@@ -104,10 +98,6 @@ export default function Header() {
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
     setIsMobileCatalogOpen(false);
-  };
-
-  const toggleMobileCatalog = () => {
-    setIsMobileCatalogOpen((prev) => !prev);
   };
 
   const myProductsLink = (
@@ -161,44 +151,51 @@ export default function Header() {
             </Link>
           </div>
 
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex items-center space-x-8">
             <div
               className="relative"
-              onMouseEnter={handleCatalogMouseEnter}
-              onMouseLeave={handleCatalogMouseLeave}
+              onMouseEnter={openMegaMenu}
+              onMouseLeave={scheduleCloseMegaMenu}
             >
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors cursor-pointer flex items-center"
+              <button
+                type="button"
+                className={`flex items-center px-3 py-2 rounded-md text-lg font-medium transition-colors ${
+                  isMegaMenuOpen ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+                }`}
+                aria-expanded={isMegaMenuOpen}
+                aria-haspopup="true"
               >
                 Каталог
                 <svg
-                  className="w-4 h-4 ml-1 text-gray-400 group-hover:text-blue-600 transition-colors duration-200"
+                  className={`w-4 h-4 ml-1 transition-transform duration-200 ${
+                    isMegaMenuOpen ? 'rotate-180 text-blue-500' : 'text-gray-400'
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </Link>
+              </button>
 
-              <CategoryDropdown
+              <CatalogMegaMenu
                 categories={categories}
                 onCategorySelect={handleCategorySelect}
-                isVisible={isDropdownVisible}
-                onMouseEnter={handleDropdownMouseEnter}
-                onMouseLeave={handleDropdownMouseLeave}
+                isVisible={isMegaMenuOpen}
+                onMouseEnter={cancelCloseMegaMenu}
+                onMouseLeave={scheduleCloseMegaMenu}
               />
             </div>
-          </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
             <Link
               to="/about"
               className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-lg font-medium transition-colors"
             >
               О нас
             </Link>
+          </nav>
+
+          <div className="hidden md:flex items-center space-x-4">
             {myProductsLink}
           </div>
 
@@ -210,9 +207,9 @@ export default function Header() {
 
       {isMobileMenuOpen && (
         <>
-          <div className="md:hidden fixed inset-0 bg-black/40 z-40" onClick={closeMobileMenu}></div>
-          <div className="md:hidden fixed top-16 inset-x-0 bg-white border-t border-gray-200 shadow-lg z-50 max-h-[calc(100vh-4rem)] overflow-y-auto">
-            <nav className="px-4 py-6 space-y-4">
+          <div className="md:hidden fixed inset-0 bg-black/40 z-40" onClick={closeMobileMenu} />
+          <div className="md:hidden fixed top-16 inset-x-0 bottom-0 bg-white border-t border-gray-200 shadow-lg z-50 overflow-y-auto">
+            <nav className="px-4 py-6 space-y-4 max-w-lg mx-auto">
               <Link
                 to="/"
                 className="block text-lg font-semibold text-gray-900"
@@ -221,13 +218,26 @@ export default function Header() {
                 Главная
               </Link>
 
+              <Link
+                to="/about"
+                className="block px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
+                onClick={closeMobileMenu}
+              >
+                О нас
+              </Link>
+
               <div>
                 <button
                   type="button"
-                  onClick={toggleMobileCatalog}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 text-gray-800 font-medium"
+                  onClick={() => setIsMobileCatalogOpen((prev) => !prev)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 text-gray-800 font-semibold hover:border-blue-300"
                 >
-                  <span>Каталог</span>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    Каталог
+                  </span>
                   <svg
                     className={`w-4 h-4 transition-transform ${isMobileCatalogOpen ? 'rotate-180' : ''}`}
                     fill="none"
@@ -238,49 +248,12 @@ export default function Header() {
                   </svg>
                 </button>
                 {isMobileCatalogOpen && (
-                  <ul className="mt-3 space-y-2 pl-2">
-                    <li>
-                      <button
-                        type="button"
-                        onClick={() => handleCategorySelect('')}
-                        className="w-full text-left px-4 py-2 rounded-md text-gray-700 hover:bg-blue-50 hover:text-blue-700"
-                      >
-                        Все категории
-                      </button>
-                    </li>
-                    {categories.length > 0 ? (
-                      categories.map((category) => (
-                        <li key={category.uuid}>
-                          <button
-                            type="button"
-                            onClick={() => handleCategorySelect(category.uuid)}
-                            className="w-full text-left px-4 py-2 rounded-md text-gray-800 font-medium hover:bg-blue-50 hover:text-blue-700"
-                          >
-                            {category.name}
-                          </button>
-                          {category.children?.length > 0 && (
-                            <ul className="ml-3 mt-1 space-y-1 border-l border-gray-100 pl-2">
-                              {category.children.map((child) => (
-                                <li key={child.uuid}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCategorySelect(child.uuid)}
-                                    className="w-full text-left px-3 py-1.5 rounded-md text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                                  >
-                                    {child.name}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </li>
-                      ))
-                    ) : (
-                      <li className="px-4 py-2 text-sm text-gray-400">
-                        Категории не найдены
-                      </li>
-                    )}
-                  </ul>
+                  <div className="mt-3">
+                    <MobileCatalogMenu
+                      categories={categories}
+                      onCategorySelect={handleCategorySelect}
+                    />
+                  </div>
                 )}
               </div>
 

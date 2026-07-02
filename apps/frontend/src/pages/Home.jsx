@@ -19,8 +19,6 @@ export default function Home() {
     category: '',
     minPrice: '',
     maxPrice: '',
-    availableOnly: false,
-    popularOnly: false,
     ordering: '-created_at'
   });
   const [categories, setCategories] = useState([]);
@@ -38,7 +36,6 @@ export default function Home() {
           category: '',
           minPrice: '',
           maxPrice: '',
-          availableOnly: false,
           ordering: '-created_at'
         });
         setSearchTerm('');
@@ -62,7 +59,6 @@ export default function Home() {
         category: '',
         minPrice: '',
         maxPrice: '',
-        availableOnly: false,
         ordering: '-created_at'
       });
       setSearchTerm('');

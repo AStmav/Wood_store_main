@@ -8,8 +8,6 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
     category: '',
     minPrice: '',
     maxPrice: '',
-    availableOnly: false,
-    popularOnly: false,
     ordering: '-created_at'
   });
   const searchTimeoutRef = useRef(null);
@@ -46,8 +44,6 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
       category: '',
       minPrice: '',
       maxPrice: '',
-      availableOnly: false,
-      popularOnly: false,
       ordering: '-created_at'
     };
     setLocalFilters(clearedFilters);
@@ -62,8 +58,6 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
   const hasActiveFilters = localFilters.category || 
     localFilters.minPrice || 
     localFilters.maxPrice || 
-    localFilters.availableOnly ||
-    localFilters.popularOnly ||
     localFilters.ordering !== '-created_at';
 
   const flatCategories = flattenCategories(categories);
@@ -121,7 +115,7 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
       {/* Панель фильтров */}
       {isFiltersOpen && (
         <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Категория */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -181,36 +175,6 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
                 <option value="price">По цене (возрастание)</option>
                 <option value="-price">По цене (убывание)</option>
               </select>
-            </div>
-
-            {/* Доступность и популярность */}
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={localFilters.availableOnly}
-                    onChange={(e) => handleFilterChange('availableOnly', e.target.checked)}
-                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="text-sm text-gray-700">Только в наличии</span>
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={localFilters.popularOnly}
-                    onChange={(e) => handleFilterChange('popularOnly', e.target.checked)}
-                    className="mr-2 h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                  />
-                  <span className="text-sm text-gray-700 flex items-center">
-                    <span className="text-red-500 mr-1">⭐</span>
-                    Только популярные
-                  </span>
-                </label>
-              </div>
             </div>
           </div>
 

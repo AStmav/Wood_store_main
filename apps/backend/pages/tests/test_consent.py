@@ -47,7 +47,6 @@ class OrderConsentApiTests(APITestCase):
             slug='krovat-test',
             price='10000.00',
             category=category,
-            stock_quantity=5,
             is_available=True,
         )
 

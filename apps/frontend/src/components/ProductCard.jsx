@@ -52,28 +52,6 @@ export default function ProductCard({ product }) {
                 </span>
               </div>
             )}
-
-            <div className="absolute top-2 left-2">
-              {product.rating && (
-                <div className="bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-semibold">
-                  ⭐ {product.rating} Рейтинг
-                </div>
-              )}
-            </div>
-
-            {product.available !== undefined && (
-              <div className="absolute bottom-2 left-2">
-                {product.available ? (
-                  <div className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                    ✅ В наличии
-                  </div>
-                ) : (
-                  <div className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                    ❌ Нет
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="p-4 flex-1 flex flex-col">
@@ -95,28 +73,10 @@ export default function ProductCard({ product }) {
               )}
             </div>
 
-            <div className="h-16 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
-                  {formatProductPrice(product)}
-                </span>
-              </div>
-
-              {product.available !== undefined && (
-                <div className="flex items-center">
-                  {product.available ? (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-green-700">В наличии</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-red-700">Нет в наличии</span>
-                    </div>
-                  )}
-                </div>
-              )}
+            <div className="mt-auto">
+              <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
+                {formatProductPrice(product)}
+              </span>
             </div>
           </div>
         </Link>
@@ -125,26 +85,22 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             onClick={handleAddToMyProducts}
-            disabled={!product.available || inMyProducts || isAdding || loading}
+            disabled={inMyProducts || isAdding || loading}
             className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1 ${
               inMyProducts
                 ? 'bg-gray-100 text-gray-500 cursor-default'
-                : product.available
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <span>
-              {!product.available
-                ? 'Нет в наличии'
-                : inMyProducts
-                  ? 'Уже в моих товарах'
-                  : isAdding
-                    ? 'Добавление...'
-                    : 'В мои товары'}
+              {inMyProducts
+                ? 'Уже в моих товарах'
+                : isAdding
+                  ? 'Добавление...'
+                  : 'В мои товары'}
             </span>
           </button>
         </div>

@@ -55,46 +55,24 @@ class CategoryDetailSerializer(CategorySerializer):
 
 class ProductListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
-    available = serializers.SerializerMethodField()
-
-    def get_available(self, obj):
-        return obj.is_available and obj.stock_quantity > 0
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
-            'image', 'category', 'rating', 'slug',
-            'stock_quantity', 'is_available', 'available', 'specifications',
+            'image', 'category', 'slug', 'specifications',
         ]
-        read_only_fields = ['uuid', 'slug', 'rating', 'available']
+        read_only_fields = ['uuid', 'slug']
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     related_products = ProductListSerializer(many=True, read_only=True)
-    available = serializers.SerializerMethodField()
-
-    def get_available(self, obj):
-        return obj.is_available and obj.stock_quantity > 0
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
-            'image', 'category', 'rating', 'slug',
-            'stock_quantity', 'is_available', 'available',
-            'related_products', 'specifications',
+            'image', 'category', 'slug', 'related_products', 'specifications',
         ]
-        read_only_fields = ['uuid', 'slug', 'rating', 'available']
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    stock_status = serializers.SerializerMethodField()
-
-    def get_stock_status(self, obj):
-        if not obj.is_available:
-            return 'unavailable'
-        if obj.stock_quantity == 0:
-            return 'out_of_stock'
-        return 'in_stock'
+        read_only_fields = ['uuid', 'slug']

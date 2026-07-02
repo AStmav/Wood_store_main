@@ -4,7 +4,6 @@ from django.utils import timezone
 from pages.consent import CONSENT_REQUIRED_MESSAGE
 from .models import Order, OrderItem, Delivery, Payment, Cart, CartItem, Favorite
 from catalog.serializers import ProductListSerializer
-from catalog.services import ProductService
 
 class OrderItemSerializer(serializers.ModelSerializer):
     """
@@ -99,15 +98,11 @@ class CartItemSerializer(serializers.ModelSerializer):
         decimal_places=2,
         read_only=True
     )
-    max_available = serializers.SerializerMethodField()
-    
-    def get_max_available(self, obj):
-        return ProductService.get_available_quantity(obj.product.uuid)
 
     class Meta:
         model = CartItem
-        fields = ['uuid', 'product', 'quantity', 'total_price', 'max_available']
-        read_only_fields = ['uuid', 'total_price', 'max_available']
+        fields = ['uuid', 'product', 'quantity', 'total_price']
+        read_only_fields = ['uuid', 'total_price']
 
 class CartSerializer(serializers.ModelSerializer):
     """

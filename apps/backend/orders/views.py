@@ -262,23 +262,6 @@ class CartViewSet(viewsets.ModelViewSet):
         
         try:
             cart_item = cart.items.get(uuid=item_uuid)
-            available_quantity = ProductService.get_available_quantity(cart_item.product.uuid)
-             
-            if available_quantity == 0:
-                return Response(
-                    {"error": "Товар недоступен"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            if quantity > available_quantity:
-                return Response(
-                    {
-                        "error": f"Доступно {available_quantity} шт.",
-                        "max_quantity": available_quantity,
-                        "request_quantity": quantity
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
             updated_item = CartService.update_cart_item(cart_item, quantity)
             if updated_item:
                 # Возвращаем обновленную корзину

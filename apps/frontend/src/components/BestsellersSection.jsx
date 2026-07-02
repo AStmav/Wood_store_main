@@ -13,11 +13,11 @@ const BestsellersSection = () => {
       try {
         setLoading(true);
         setError(null);
-        const data = await productService.getBestsellers(4.0, 6);
+        const data = await productService.getFeaturedProducts(6);
         setProducts(data);
       } catch (err) {
         console.error('Error loading bestsellers:', err);
-        setError('Не удалось загрузить хиты продаж');
+        setError('Не удалось загрузить товары');
       } finally {
         setLoading(false);
       }
@@ -46,7 +46,7 @@ const BestsellersSection = () => {
         {/* Заголовок секции */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">
-            Хит продаж
+            Подборка товаров
           </h2>
         </div>
 

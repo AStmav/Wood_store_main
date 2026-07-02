@@ -208,15 +208,10 @@ class CartService:
         """
         Добавление товара в корзину
         """
-        available_quantity = ProductService.get_available_quantity(product_uuid)
-        
-        if available_quantity == 0:
-            raise ValueError("Товар недоступен")
-        
-        if quantity > available_quantity:
-            quantity = available_quantity
-
         product = Product.objects.get(uuid=product_uuid)
+        if not product.is_available:
+            raise ValueError("Товар недоступен")
+
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
             product=product,

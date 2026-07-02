@@ -68,10 +68,10 @@ export const productService = {
     return response.data;
   },
 
-  // Получение хитов продаж на основе рейтинга
-  getBestsellers: async (minRating = 4.0, limit = 6) => {
-    const response = await api.get('catalog/products/bestsellers/', {
-      params: { min_rating: minRating, limit }
+  // Подборка товаров для главной
+  getFeaturedProducts: async (limit = 6) => {
+    const response = await api.get('catalog/products/featured/', {
+      params: { limit }
     });
     return response.data;
   }
@@ -95,18 +95,6 @@ export const buildSearchParams = (searchTerm, filters) => {
 
   if (filters.maxPrice) {
     params.max_price = filters.maxPrice;
-  }
-
-  if (filters.availableOnly) {
-    params.available_only = 'true';
-  }
-
-  if (filters.popularOnly) {
-    params.popular_only = 'true';
-  }
-
-  if (filters.sleepSize) {
-    params.sleep_size = filters.sleepSize;
   }
 
   if (filters.ordering) {

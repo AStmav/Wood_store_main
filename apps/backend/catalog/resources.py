@@ -26,9 +26,8 @@ class ProductResource(resources.ModelResource):
             'name',
             'description',
             'price',
+            'price_on_request',
             'category',
-            'rating',
-            'stock_quantity',
             'is_available',
             'slug',
         )
@@ -37,9 +36,8 @@ class ProductResource(resources.ModelResource):
             'name',
             'description',
             'price',
+            'price_on_request',
             'category',
-            'rating',
-            'stock_quantity',
             'is_available',
             'slug',
         )

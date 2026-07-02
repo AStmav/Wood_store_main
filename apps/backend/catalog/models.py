@@ -88,10 +88,8 @@ class Product(BaseModel):
         verbose_name='Категория',
     )
     image = models.ImageField(upload_to='products/', blank=True, null=True, verbose_name='Изображение')
-    rating = models.FloatField(default=0.0, verbose_name='Рейтинг')
     slug = models.SlugField(max_length=200, unique=True, verbose_name='Slug')
-    stock_quantity = models.PositiveIntegerField(default=0, verbose_name='Количество на складе')
-    is_available = models.BooleanField(default=True, verbose_name='Доступен для заказа')
+    is_available = models.BooleanField(default=True, verbose_name='Показывать на сайте')
     specifications = JSONField(default=dict, blank=True, verbose_name='Характеристики')
 
     class Meta:

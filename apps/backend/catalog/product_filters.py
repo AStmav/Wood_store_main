@@ -7,6 +7,8 @@ from .models import Category, Product
 
 def filter_products_queryset(queryset, request):
     """Применяет query-параметры к queryset товаров."""
+    queryset = queryset.filter(is_available=True)
+
     category_id = request.query_params.get('category')
     if category_id:
         try:
@@ -18,9 +20,6 @@ def filter_products_queryset(queryset, request):
                 queryset = queryset.filter(category=category)
         except Category.DoesNotExist:
             return Product.objects.none()
-
-    if request.query_params.get('available_only') == 'true':
-        queryset = queryset.filter(is_available=True)
 
     min_price = request.query_params.get('min_price')
     max_price = request.query_params.get('max_price')
@@ -46,6 +45,6 @@ def filter_products_queryset(queryset, request):
         queryset = queryset.filter(size_q)
 
     ordering = request.query_params.get('ordering', '-created_at')
-    if ordering not in ('name', '-name', 'price', '-price', 'created_at', '-created_at', 'rating', '-rating'):
+    if ordering not in ('name', '-name', 'price', '-price', 'created_at', '-created_at'):
         ordering = '-created_at'
     return queryset.order_by(ordering)

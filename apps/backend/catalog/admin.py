@@ -42,7 +42,7 @@ class ProductAdminForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        exclude = ('slug',)  # генерируется автоматически из названия
+        exclude = ('slug',)
 
     def clean_specifications(self):
         value = self.cleaned_data.get('specifications')
@@ -53,17 +53,18 @@ class ProductAdminForm(forms.ModelForm):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ('name', 'slug', 'category', 'price', 'price_on_request', 'stock_quantity', 'is_available', 'stock_status', 'rating', 'created_at')
-    list_filter = ('category', 'is_available', 'created_at')
+    list_display = ('name', 'slug', 'category', 'price', 'price_on_request', 'is_available', 'created_at')
+    list_filter = ('category', 'is_available', 'price_on_request', 'created_at')
     search_fields = ('name', 'description', 'slug')
-    readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at', 'stock_status')
+    readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at')
+    list_editable = ('is_available',)
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'description', 'category', 'image')
+            'fields': ('name', 'description', 'category', 'image', 'is_available')
         }),
-        ('Цена и рейтинг', {
-            'fields': ('price_on_request', 'price', 'rating'),
+        ('Цена', {
+            'fields': ('price_on_request', 'price'),
             'description': 'Включите «Цена по запросу», чтобы скрыть цену на сайте. Поле «Цена» можно оставить для ориентира менеджера.',
         }),
         ('Характеристики товара', {
@@ -73,10 +74,6 @@ class ProductAdmin(admin.ModelAdmin):
                 'Пример: {"Цвет": "Натуральный", "Материал": "Дерево", "Размеры": "120x60x75 см"}'
             ),
             'classes': ('wide',)
-        }),
-        ('Наличие товара', {
-            'fields': ('stock_quantity', 'is_available', 'stock_status'),
-            'description': 'Управление количеством и доступностью товара'
         }),
         ('Системная информация', {
             'fields': ('uuid', 'created_at', 'updated_at'),
@@ -98,43 +95,21 @@ class ProductAdmin(admin.ModelAdmin):
                     'fields': ('uuid', 'slug', 'created_at', 'updated_at'),
                     'classes': ('collapse',),
                     'description': (
-                'Slug создаётся автоматически: «название-категория». '
-                'При совпадении добавляется суффикс -2, -3, …'
-            ),
+                        'Slug создаётся автоматически: «название-категория». '
+                        'При совпадении добавляется суффикс -2, -3, …'
+                    ),
                 },
             )
         return fieldsets
-    
-    def stock_status(self, obj):
-        """Отображает статус наличия товара"""
-        if not obj.is_available:
-            return "❌ Недоступен"
-        elif obj.stock_quantity == 0:
-            return "🔴 Нет в наличии"
-        elif obj.stock_quantity <= 5:
-            return f"🟡 Мало ({obj.stock_quantity} шт.)"
-        else:
-            return f"🟢 В наличии ({obj.stock_quantity} шт.)"
-    
-    stock_status.short_description = 'Статус наличия'
-    stock_status.admin_order_field = 'stock_quantity'
-    
-    actions = ['make_available', 'make_unavailable', 'restock_products']
-    
+
+    actions = ['make_available', 'make_unavailable']
+
     def make_available(self, request, queryset):
-        """Делает выбранные товары доступными"""
         updated = queryset.update(is_available=True)
-        self.message_user(request, f'{updated} товаров сделано доступными.')
-    make_available.short_description = "Сделать доступными"
-    
+        self.message_user(request, f'{updated} товаров опубликовано на сайте.')
+    make_available.short_description = 'Показывать на сайте'
+
     def make_unavailable(self, request, queryset):
-        """Делает выбранные товары недоступными"""
         updated = queryset.update(is_available=False)
-        self.message_user(request, f'{updated} товаров сделано недоступными.')
-    make_unavailable.short_description = "Сделать недоступными"
-    
-    def restock_products(self, request, queryset):
-        """Пополняет склад выбранных товаров"""
-        updated = queryset.update(stock_quantity=100)
-        self.message_user(request, f'{updated} товаров пополнено до 100 шт.')
-    restock_products.short_description = "Пополнить склад (100 шт.)"
+        self.message_user(request, f'{updated} товаров скрыто с сайта.')
+    make_unavailable.short_description = 'Скрыть с сайта'
