@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/ProductCard.jsx';
 import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
@@ -10,60 +10,48 @@ import BestsellersSection from '../components/BestsellersSection.jsx';
 import { newsService } from '../api/newsService.js';
 import { productService, buildSearchParams } from '../api/productService.js';
 
+const DEFAULT_FILTERS = {
+  category: '',
+  minPrice: '',
+  maxPrice: '',
+  ordering: '-created_at',
+};
+
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    category: '',
-    minPrice: '',
-    maxPrice: '',
-    ordering: '-created_at'
-  });
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [categories, setCategories] = useState([]);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const [news, setNews] = useState([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
-  // Обработка выбранной категории из навигации
+  // Категория из футера или другой навигации с state
   useEffect(() => {
-    if (location.state?.selectedCategory !== undefined) {
-      if (location.state.selectedCategory === '') {
-        // Если выбрана "Все категории", сбрасываем все фильтры
-        setFilters({
-          category: '',
-          minPrice: '',
-          maxPrice: '',
-          ordering: '-created_at'
-        });
-        setSearchTerm('');
-      } else if (location.state.selectedCategory) {
-        // Если выбрана конкретная категория, устанавливаем её
-        setFilters(prev => ({
-          ...prev,
-          category: location.state.selectedCategory
-        }));
-      }
-      // Очищаем состояние навигации
-      window.history.replaceState({}, document.title);
+    const selectedCategory = location.state?.selectedCategory;
+    if (selectedCategory === undefined) {
+      return;
     }
-  }, [location.state]);
 
-  // Сброс фильтров при переходе на главную страницу без выбора категории
-  useEffect(() => {
-    // Если мы на главной странице и нет выбранной категории, сбрасываем фильтры
-    if (location.pathname === '/' && !location.state?.selectedCategory) {
-      setFilters({
-        category: '',
-        minPrice: '',
-        maxPrice: '',
-        ordering: '-created_at'
-      });
+    if (selectedCategory === '') {
+      setFilters(DEFAULT_FILTERS);
       setSearchTerm('');
+    } else {
+      setFilters((prev) =>
+        prev.category === selectedCategory
+          ? prev
+          : { ...prev, category: selectedCategory },
+      );
     }
-  }, [location.pathname, location.state]);
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state?.selectedCategory, location.pathname, navigate]);
 
   // Загрузка новостей
   useEffect(() => {
@@ -100,58 +88,58 @@ export default function Home() {
 
   // Загрузка продуктов с поиском и фильтрацией
   useEffect(() => {
+    let cancelled = false;
+
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        
-        const params = buildSearchParams(searchTerm, filters);
-        
+        setError(null);
+
+        const params = buildSearchParams(searchTerm, filtersRef.current);
         const response = await productService.searchProducts(params);
-        
-        // Django REST Framework возвращает объект с полем results
         const productsData = response.results || response;
-        setProducts(productsData);
+
+        if (!cancelled) {
+          setProducts(productsData);
+        }
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError('Ошибка загрузки товаров. Попробуйте позже.');
+        if (!cancelled) {
+          setError('Ошибка загрузки товаров. Попробуйте позже.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+
+    return () => {
+      cancelled = true;
+    };
   }, [searchTerm, filters]);
 
-  const handleSearch = (term) => {
+  const handleSearch = useCallback((term) => {
     setSearchTerm(term);
-  };
+  }, []);
 
-  const handleFiltersChange = (newFilters) => {
+  const handleFiltersChange = useCallback((newFilters) => {
     setFilters(newFilters);
-  };
-
-  if (loading && products.length === 0) {
-    return <LoadingSpinner />;
-  }
-  
-  if (error) {
-    return <ErrorMessage message={error} />;
-  }
+  }, []);
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        {/* Слайдер новостей */}
         <NewsSection news={news} loading={newsLoading} />
-        
-        {/* Хиты продаж */}
+
         <BestsellersSection />
-        
+
         <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
           Каталог товаров
         </h1>
-        
-        {/* Поиск и фильтры */}
+
         <div className="mb-8">
           <SearchBar
             onSearch={handleSearch}
@@ -162,12 +150,15 @@ export default function Home() {
           />
         </div>
 
-        {/* Результаты поиска */}
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner />
-          </div>
-        ) : products.length === 0 ? (
+        {error && (
+          <ErrorMessage message={error} />
+        )}
+
+        {!error && loading && products.length === 0 && (
+          <LoadingSpinner />
+        )}
+
+        {!error && !loading && products.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -175,28 +166,35 @@ export default function Home() {
               </svg>
             </div>
             <p className="text-gray-500 text-lg">
-              {searchTerm || Object.values(filters).some(v => v && v !== '-created_at') 
-                ? 'По вашему запросу ничего не найдено' 
-                : 'Товары не найдены'
-              }
+              {searchTerm || Object.values(filters).some((v) => v && v !== '-created_at')
+                ? 'По вашему запросу ничего не найдено'
+                : 'Товары не найдены'}
             </p>
             <p className="text-sm text-gray-400 mt-2">
-              {searchTerm || Object.values(filters).some(v => v && v !== '-created_at')
+              {searchTerm || Object.values(filters).some((v) => v && v !== '-created_at')
                 ? 'Попробуйте изменить параметры поиска'
-                : 'Добавьте товары через админ-панель'
-              }
+                : 'Добавьте товары через админ-панель'}
             </p>
           </div>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-6">
-            {products.map(product => (
-              <div key={product.uuid} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-sm">
-                <ProductCard product={product} />
+        )}
+
+        {!error && products.length > 0 && (
+          <div className="relative">
+            {loading && (
+              <div className="absolute inset-0 z-10 flex items-start justify-center bg-gray-50/70 pt-8">
+                <LoadingSpinner />
               </div>
-            ))}
+            )}
+            <div className="flex flex-wrap justify-center gap-6">
+              {products.map((product) => (
+                <div key={product.uuid} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-sm">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
     </Layout>
   );
-} 
+}

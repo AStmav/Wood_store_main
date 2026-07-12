@@ -51,22 +51,26 @@ export default function CategoryPage() {
     setSearchParams(next);
   };
 
-  if (loading && !meta) {
-    return <LoadingSpinner />;
-  }
-
-  if (error) {
-    return <ErrorMessage message={error} />;
-  }
-
   const category = meta?.category;
   const breadcrumbs = category?.breadcrumbs || [];
   const children = meta?.children || [];
   const sleepSizes = meta?.sleep_sizes || [];
 
+  if (error && !meta) {
+    return (
+      <Layout>
+        <ErrorMessage message={error} />
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        {loading && !meta ? (
+          <LoadingSpinner fullScreen />
+        ) : (
+          <>
         {breadcrumbs.length > 0 && (
           <nav className="text-sm text-gray-500 mb-4 flex flex-wrap gap-1">
             <Link to="/" className="hover:text-blue-600">Главная</Link>
@@ -162,6 +166,8 @@ export default function CategoryPage() {
               </div>
             ))}
           </div>
+        )}
+          </>
         )}
       </div>
     </Layout>

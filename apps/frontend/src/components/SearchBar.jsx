@@ -11,15 +11,19 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
     ordering: '-created_at'
   });
   const searchTimeoutRef = useRef(null);
+  const onSearchRef = useRef(onSearch);
 
   useEffect(() => {
-    // Debounce search
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      onSearch(searchTerm);
+      onSearchRef.current(searchTerm);
     }, 300);
 
     return () => {
@@ -27,7 +31,7 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm, onSearch]);
+  }, [searchTerm]);
 
   useEffect(() => {
     setLocalFilters(filters);
