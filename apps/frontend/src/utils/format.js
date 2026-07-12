@@ -33,7 +33,7 @@ export const formatProductPrice = (product) => {
   if (hasProductDiscount(product)) {
     return `${formatPrice(product.sale_price)} ₽`;
   }
-  return `от ${formatPrice(product?.price)} ₽`;
+  return `${formatPrice(product?.price)} ₽`;
 };
 
 export const formatProductPriceWithOld = (product) => {
@@ -48,7 +48,7 @@ export const formatProductPriceWithOld = (product) => {
     };
   }
   return {
-    primary: `от ${formatPrice(product?.price)} ₽`,
+    primary: `${formatPrice(product?.price)} ₽`,
     secondary: null,
     discountPercent: 0,
   };

@@ -56,7 +56,7 @@ export default function ProductPriceDisplay({ product, size = 'md', className = 
   return (
     <div className={className}>
       <span className={`${styles.regular} whitespace-nowrap`}>
-        от {formatPrice(product?.price)} ₽
+        {formatPrice(product?.price)} ₽
       </span>
     </div>
   );
