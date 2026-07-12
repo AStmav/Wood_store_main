@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import JSONField
 
 from furniture_store.models import BaseModel
+from .discounts import DISCOUNT_PERCENT_CHOICES, VALID_DISCOUNT_PERCENTS, calculate_sale_price
 from .slugs import assign_unique_slug, product_slug_base, slug_base_from_name
 
 
@@ -81,6 +83,12 @@ class Product(BaseModel):
         verbose_name='Цена по запросу',
         help_text='Если включено, на сайте вместо цены показывается «Цена по запросу»',
     )
+    discount_percent = models.PositiveSmallIntegerField(
+        default=0,
+        choices=DISCOUNT_PERCENT_CHOICES,
+        verbose_name='Скидка',
+        help_text='Процент скидки от базовой цены. Шаг 5% (5, 10, 15 … 95). 0 — без скидки.',
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
@@ -98,6 +106,27 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def has_discount(self) -> bool:
+        return self.discount_percent > 0 and not self.price_on_request
+
+    @property
+    def sale_price(self):
+        if not self.has_discount:
+            return None
+        return calculate_sale_price(self.price, self.discount_percent)
+
+    def clean(self):
+        super().clean()
+        if self.discount_percent not in VALID_DISCOUNT_PERCENTS:
+            raise ValidationError({
+                'discount_percent': 'Скидка должна быть 0 или кратна 5% от 5 до 95.',
+            })
+        if self.price_on_request and self.discount_percent:
+            raise ValidationError({
+                'discount_percent': 'Скидка недоступна для товаров с ценой по запросу.',
+            })
 
     def save(self, *args, **kwargs):
         if self.specifications is None:

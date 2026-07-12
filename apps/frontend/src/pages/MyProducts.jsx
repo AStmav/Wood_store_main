@@ -5,7 +5,7 @@ import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import QuoteRequestModal from '../components/QuoteRequestModal.jsx';
 import OrderSuccessModal from '../components/OrderSuccessModal.jsx';
-import { formatProductPrice } from '../utils/format.js';
+import ProductPriceDisplay from '../components/ProductPriceDisplay.jsx';
 
 export default function MyProducts() {
   const { items, loading, removeProduct, clearProducts } = useMyProducts();
@@ -82,9 +82,7 @@ export default function MyProducts() {
                         {item.product.category && (
                           <p className="text-xs md:text-sm text-blue-600">{item.product.category.name}</p>
                         )}
-                        <p className="text-sm md:text-base text-gray-500">
-                          {formatProductPrice(item.product)}
-                        </p>
+                        <ProductPriceDisplay product={item.product} size="sm" />
                       </div>
                       <button
                         type="button"

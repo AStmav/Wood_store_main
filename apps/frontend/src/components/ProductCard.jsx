@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
-import { formatProductPrice } from '../utils/format.js';
+import ProductPriceDisplay, { ProductPhotoDiscountBadge } from './ProductPriceDisplay.jsx';
 
 export default function ProductCard({ product }) {
   const { addProduct, isInMyProducts, loading } = useMyProducts();
@@ -45,6 +45,8 @@ export default function ProductCard({ product }) {
               }}
             />
 
+            <ProductPhotoDiscountBadge product={product} />
+
             {inMyProducts && (
               <div className="absolute top-2 right-2">
                 <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
@@ -74,9 +76,7 @@ export default function ProductCard({ product }) {
             </div>
 
             <div className="mt-auto">
-              <span className="text-xl font-bold text-gray-900 whitespace-nowrap">
-                {formatProductPrice(product)}
-              </span>
+              <ProductPriceDisplay product={product} size="md" />
             </div>
           </div>
         </Link>

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django import forms
 from .models import Category, Product
+from .discounts import calculate_sale_price
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -50,13 +51,23 @@ class ProductAdminForm(forms.ModelForm):
             return {}
         return value
 
+    def clean(self):
+        cleaned_data = super().clean()
+        price_on_request = cleaned_data.get('price_on_request')
+        discount_percent = cleaned_data.get('discount_percent') or 0
+
+        if price_on_request and discount_percent:
+            cleaned_data['discount_percent'] = 0
+
+        return cleaned_data
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ('name', 'slug', 'category', 'price', 'price_on_request', 'is_available', 'created_at')
-    list_filter = ('category', 'is_available', 'price_on_request', 'created_at')
+    list_display = ('name', 'slug', 'category', 'price', 'discount_percent', 'price_on_request', 'is_available', 'created_at')
+    list_filter = ('category', 'is_available', 'price_on_request', 'discount_percent', 'created_at')
     search_fields = ('name', 'description', 'slug')
-    readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at')
+    readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at', 'sale_price_preview')
     list_editable = ('is_available',)
 
     fieldsets = (
@@ -64,8 +75,12 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('name', 'description', 'category', 'image', 'is_available')
         }),
         ('Цена', {
-            'fields': ('price_on_request', 'price'),
-            'description': 'Включите «Цена по запросу», чтобы скрыть цену на сайте. Поле «Цена» можно оставить для ориентира менеджера.',
+            'fields': ('price_on_request', 'price', 'discount_percent', 'sale_price_preview'),
+            'description': (
+                '«Цена» — базовая стоимость до скидки. '
+                'Скидка задаётся шагом 5% (5–95). '
+                'При «Цене по запросу» скидка на сайте не показывается.'
+            ),
         }),
         ('Характеристики товара', {
             'fields': ('specifications',),
@@ -103,6 +118,17 @@ class ProductAdmin(admin.ModelAdmin):
         return fieldsets
 
     actions = ['make_available', 'make_unavailable']
+
+    @admin.display(description='Цена со скидкой')
+    def sale_price_preview(self, obj):
+        if obj is None or not obj.pk:
+            return '—'
+        if obj.price_on_request:
+            return 'Цена по запросу'
+        if not obj.discount_percent:
+            return 'Без скидки'
+        sale_price = calculate_sale_price(obj.price, obj.discount_percent)
+        return f'{sale_price} ₽ (−{obj.discount_percent}%)'
 
     def make_available(self, request, queryset):
         updated = queryset.update(is_available=True)

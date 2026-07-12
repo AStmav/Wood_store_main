@@ -5,7 +5,7 @@ import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
-import { formatProductPrice } from '../utils/format.js';
+import ProductPriceDisplay, { ProductPhotoDiscountBadge } from '../components/ProductPriceDisplay.jsx';
 import { trackProductView } from '../api/analytics.js';
 
 const ProductDetail = () => {
@@ -125,7 +125,7 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Изображение товара */}
             <div className="space-y-4">
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+              <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img 
                   src={product.image || '/placeholder-product.svg'}
                   alt={product.name}
@@ -134,6 +134,7 @@ const ProductDetail = () => {
                     e.target.src = '/placeholder-product.svg';
                   }}
                 />
+                <ProductPhotoDiscountBadge product={product} />
               </div>
             </div>
 
@@ -177,12 +178,8 @@ const ProductDetail = () => {
 
               {/* Цена и добавление в список */}
               <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <span className="text-3xl font-bold text-gray-900 whitespace-nowrap">
-                      {formatProductPrice(product)}
-                    </span>
-                  </div>
+                <div className="mb-6">
+                  <ProductPriceDisplay product={product} size="lg" />
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">

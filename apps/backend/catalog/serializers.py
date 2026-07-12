@@ -53,19 +53,34 @@ class CategoryDetailSerializer(CategorySerializer):
         return CategorySerializer(children, many=True).data
 
 
-class ProductListSerializer(serializers.ModelSerializer):
+class ProductPricingMixin(serializers.Serializer):
+    discount_percent = serializers.IntegerField(read_only=True)
+    sale_price = serializers.SerializerMethodField()
+    has_discount = serializers.SerializerMethodField()
+
+    def get_sale_price(self, obj):
+        if obj.has_discount and obj.sale_price is not None:
+            return obj.sale_price
+        return None
+
+    def get_has_discount(self, obj) -> bool:
+        return obj.has_discount
+
+
+class ProductListSerializer(ProductPricingMixin, serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
+            'discount_percent', 'sale_price', 'has_discount',
             'image', 'category', 'slug', 'specifications',
         ]
         read_only_fields = ['uuid', 'slug']
 
 
-class ProductDetailSerializer(serializers.ModelSerializer):
+class ProductDetailSerializer(ProductPricingMixin, serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     related_products = ProductListSerializer(many=True, read_only=True)
 
@@ -73,6 +88,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
+            'discount_percent', 'sale_price', 'has_discount',
             'image', 'category', 'slug', 'related_products', 'specifications',
         ]
         read_only_fields = ['uuid', 'slug']
