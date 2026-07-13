@@ -6,6 +6,7 @@ import ProductDetail from '../src/pages/ProductDetail.jsx';
 import CategoryPage from '../src/pages/CategoryPage.jsx';
 import About from '../src/pages/About.jsx';
 import LegalPage, { TermsPage, PrivacyPage } from '../src/pages/LegalPage.jsx';
+import CookieBanner from '../src/components/CookieBanner.jsx';
 
 export default function Router() {
   return (
@@ -23,6 +24,7 @@ export default function Router() {
         <Route path="/news/:slug" element={<NewsDetail />} />
         <Route path="/product/:uuid" element={<ProductDetail />} />
       </Routes>
+      <CookieBanner />
     </BrowserRouter>
   );
 }
