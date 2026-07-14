@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import ProductCard from '../components/ProductCard.jsx';
 import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import SearchBar from '../components/SearchBar.jsx';
 import NewsSection from '../components/NewsSection.jsx';
 import BestsellersSection from '../components/BestsellersSection.jsx';
+import ProductInfiniteGrid from '../components/ProductInfiniteGrid.jsx';
 import { newsService } from '../api/newsService.js';
 import { productService, buildSearchParams } from '../api/productService.js';
+import usePaginatedProducts from '../hooks/usePaginatedProducts.js';
 
 const DEFAULT_FILTERS = {
   category: '',
@@ -18,9 +19,6 @@ const DEFAULT_FILTERS = {
 };
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [categories, setCategories] = useState([]);
@@ -31,6 +29,8 @@ export default function Home() {
   const navigate = useNavigate();
   const filtersRef = useRef(filters);
   filtersRef.current = filters;
+  const searchTermRef = useRef(searchTerm);
+  searchTermRef.current = searchTerm;
 
   // Категория из футера или другой навигации с state
   useEffect(() => {
@@ -53,7 +53,6 @@ export default function Home() {
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state?.selectedCategory, location.pathname, navigate]);
 
-  // Загрузка новостей
   useEffect(() => {
     const loadNews = async () => {
       try {
@@ -71,7 +70,6 @@ export default function Home() {
     loadNews();
   }, []);
 
-  // Загрузка фильтров при монтировании компонента
   useEffect(() => {
     const loadFilters = async () => {
       try {
@@ -86,40 +84,23 @@ export default function Home() {
     loadFilters();
   }, []);
 
-  // Загрузка продуктов с поиском и фильтрацией
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const params = buildSearchParams(searchTerm, filtersRef.current);
-        const response = await productService.searchProducts(params);
-        const productsData = response.results || response;
-
-        if (!cancelled) {
-          setProducts(productsData);
-        }
-      } catch (err) {
-        console.error('Error fetching products:', err);
-        if (!cancelled) {
-          setError('Ошибка загрузки товаров. Попробуйте позже.');
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+  const fetchPage = useCallback(async (page) => {
+    const params = {
+      ...buildSearchParams(searchTermRef.current, filtersRef.current),
+      page,
     };
+    return productService.searchProducts(params);
+  }, []);
 
-    fetchProducts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [searchTerm, filters]);
+  const {
+    products,
+    count,
+    hasMore,
+    loading,
+    loadingMore,
+    error,
+    loadMore,
+  } = usePaginatedProducts(fetchPage, [searchTerm, filters]);
 
   const handleSearch = useCallback((term) => {
     setSearchTerm(term);
@@ -128,6 +109,8 @@ export default function Home() {
   const handleFiltersChange = useCallback((newFilters) => {
     setFilters(newFilters);
   }, []);
+
+  const hasActiveQuery = searchTerm || Object.values(filters).some((v) => v && v !== '-created_at');
 
   return (
     <Layout>
@@ -151,7 +134,7 @@ export default function Home() {
         </div>
 
         {error && (
-          <ErrorMessage message={error} />
+          <ErrorMessage message="Ошибка загрузки товаров. Попробуйте позже." />
         )}
 
         {!error && loading && products.length === 0 && (
@@ -166,12 +149,10 @@ export default function Home() {
               </svg>
             </div>
             <p className="text-gray-500 text-lg">
-              {searchTerm || Object.values(filters).some((v) => v && v !== '-created_at')
-                ? 'По вашему запросу ничего не найдено'
-                : 'Товары не найдены'}
+              {hasActiveQuery ? 'По вашему запросу ничего не найдено' : 'Товары не найдены'}
             </p>
             <p className="text-sm text-gray-400 mt-2">
-              {searchTerm || Object.values(filters).some((v) => v && v !== '-created_at')
+              {hasActiveQuery
                 ? 'Попробуйте изменить параметры поиска'
                 : 'Добавьте товары через админ-панель'}
             </p>
@@ -185,13 +166,13 @@ export default function Home() {
                 <LoadingSpinner />
               </div>
             )}
-            <div className="flex flex-wrap justify-center gap-6">
-              {products.map((product) => (
-                <div key={product.uuid} className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-sm">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
+            <ProductInfiniteGrid
+              products={products}
+              count={count}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
+              onLoadMore={loadMore}
+            />
           </div>
         )}
       </div>
