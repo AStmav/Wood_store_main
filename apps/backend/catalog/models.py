@@ -146,3 +146,30 @@ class Product(BaseModel):
         except Product.DoesNotExist:
             return True
         return old.name != self.name or old.category_id != self.category_id
+
+
+class ProductImage(models.Model):
+    """Фото товара для галереи на странице товара (до 5 шт., лимит в admin)."""
+
+    MAX_PER_PRODUCT = 5
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='images',
+        verbose_name='Товар',
+    )
+    image = models.ImageField(upload_to='products/', verbose_name='Изображение')
+    sort_order = models.PositiveSmallIntegerField(
+        default=0,
+        verbose_name='Порядок',
+        help_text='Меньше число — раньше в галерее. Первое также показывается в каталоге.',
+    )
+
+    class Meta:
+        verbose_name = 'Изображение товара'
+        verbose_name_plural = 'Изображения товара'
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        return f'{self.product_id}: {self.image.name}'

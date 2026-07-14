@@ -15,7 +15,7 @@ def make_slug(value: str, prefix: str = 'item') -> str:
 from PIL import Image, ImageDraw, ImageFont
 
 from about.models import About
-from catalog.models import Category, Product
+from catalog.models import Category, Product, ProductImage
 from news.models import News
 from orders.models import Delivery, Order, OrderItem, Payment
 from orders.services import OrderService
@@ -271,6 +271,12 @@ class Command(BaseCommand):
             if with_images:
                 product.image = make_product_image(full_name)
             product.save()
+            if with_images and product.image:
+                ProductImage.objects.create(
+                    product=product,
+                    image=product.image.name,
+                    sort_order=0,
+                )
             products.append(product)
 
         return products

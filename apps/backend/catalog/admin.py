@@ -1,8 +1,9 @@
 from django.contrib import admin
-from django.db import models
 from django import forms
-from .models import Category, Product
+
+from .models import Category, Product, ProductImage
 from .discounts import calculate_sale_price
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -24,6 +25,7 @@ class CategoryAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class ProductAdminForm(forms.ModelForm):
     """Форма для товара с улучшенным полем характеристик"""
     specifications = forms.JSONField(
@@ -43,7 +45,7 @@ class ProductAdminForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        exclude = ('slug',)
+        exclude = ('slug', 'image')
 
     def clean_specifications(self):
         value = self.cleaned_data.get('specifications')
@@ -61,10 +63,25 @@ class ProductAdminForm(forms.ModelForm):
 
         return cleaned_data
 
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    max_num = ProductImage.MAX_PER_PRODUCT
+    fields = ('image', 'sort_order')
+    ordering = ('sort_order', 'id')
+    verbose_name = 'Изображение'
+    verbose_name_plural = 'Галерея изображений (до 5)'
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ('name', 'slug', 'category', 'price', 'discount_percent', 'price_on_request', 'is_available', 'created_at')
+    inlines = [ProductImageInline]
+    list_display = (
+        'name', 'slug', 'category', 'price', 'discount_percent',
+        'price_on_request', 'is_available', 'created_at',
+    )
     list_filter = ('category', 'is_available', 'price_on_request', 'discount_percent', 'created_at')
     search_fields = ('name', 'description', 'slug')
     readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at', 'sale_price_preview')
@@ -72,7 +89,11 @@ class ProductAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'description', 'category', 'image', 'is_available')
+            'fields': ('name', 'description', 'category', 'is_available'),
+            'description': (
+                'Фото — в блоке «Галерея» ниже (до 5). '
+                'Первое по порядку показывается в каталоге и первым в карточке товара.'
+            ),
         }),
         ('Цена', {
             'fields': ('price_on_request', 'price', 'discount_percent', 'sale_price_preview'),
@@ -116,6 +137,15 @@ class ProductAdmin(admin.ModelAdmin):
                 },
             )
         return fieldsets
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        # Product.image — для каталога/заказов: берём первое фото галереи
+        product = form.instance
+        first = product.images.order_by('sort_order', 'id').first()
+        image_name = first.image.name if first else ''
+        if product.image.name != image_name:
+            Product.objects.filter(pk=product.pk).update(image=image_name)
 
     actions = ['make_available', 'make_unavailable']
 

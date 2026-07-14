@@ -36,6 +36,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         if getattr(self, 'swagger_fake_view', False):
             return Product.objects.none()
         queryset = Product.objects.select_related('category', 'category__parent').all()
+        if self.action == 'retrieve':
+            queryset = queryset.prefetch_related('images')
         return filter_products_queryset(queryset, self.request)
 
     @action(detail=False, methods=['get'])

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Product, Category
+from .models import Product, Category, ProductImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -67,6 +67,13 @@ class ProductPricingMixin(serializers.Serializer):
         return obj.has_discount
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ['id', 'image', 'sort_order']
+        read_only_fields = fields
+
+
 class ProductListSerializer(ProductPricingMixin, serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
 
@@ -83,12 +90,13 @@ class ProductListSerializer(ProductPricingMixin, serializers.ModelSerializer):
 class ProductDetailSerializer(ProductPricingMixin, serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     related_products = ProductListSerializer(many=True, read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
             'discount_percent', 'sale_price', 'has_discount',
-            'image', 'category', 'slug', 'related_products', 'specifications',
+            'image', 'images', 'category', 'slug', 'related_products', 'specifications',
         ]
         read_only_fields = ['uuid', 'slug']

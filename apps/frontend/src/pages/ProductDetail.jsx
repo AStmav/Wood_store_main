@@ -5,7 +5,8 @@ import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
-import ProductPriceDisplay, { ProductPhotoDiscountBadge } from '../components/ProductPriceDisplay.jsx';
+import ProductPriceDisplay from '../components/ProductPriceDisplay.jsx';
+import ProductImageGallery from '../components/ProductImageGallery.jsx';
 import { trackProductView } from '../api/analytics.js';
 
 const ProductDetail = () => {
@@ -123,20 +124,7 @@ const ProductDetail = () => {
 
           {/* Основной контент */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Изображение товара */}
-            <div className="space-y-4">
-              <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                <img 
-                  src={product.image || '/placeholder-product.svg'}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = '/placeholder-product.svg';
-                  }}
-                />
-                <ProductPhotoDiscountBadge product={product} />
-              </div>
-            </div>
+            <ProductImageGallery product={product} />
 
             {/* Информация о товаре */}
             <div className="space-y-6">
