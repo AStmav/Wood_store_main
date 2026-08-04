@@ -86,7 +86,7 @@ const ProductImageGallery = ({ product }) => {
       <div className="relative sm:hidden">
         <div
           ref={scrollerRef}
-          className="flex aspect-square overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-lg bg-gray-100 scrollbar-hide"
+          className="flex aspect-[4/3] max-h-[70vh] overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-lg bg-gray-100 scrollbar-hide"
           style={{ WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           aria-label="Галерея изображений товара"
         >

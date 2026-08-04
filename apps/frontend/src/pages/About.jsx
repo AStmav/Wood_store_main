@@ -30,15 +30,27 @@ const About = () => {
   }, []);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <Layout>
+        <LoadingSpinner />
+      </Layout>
+    );
   }
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    return (
+      <Layout>
+        <ErrorMessage message={error} />
+      </Layout>
+    );
   }
 
   if (!about) {
-    return <ErrorMessage message="Информация о компании не найдена" />;
+    return (
+      <Layout>
+        <ErrorMessage message="Информация о компании не найдена" />
+      </Layout>
+    );
   }
 
   return (

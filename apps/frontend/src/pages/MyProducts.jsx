@@ -31,7 +31,11 @@ export default function MyProducts() {
   };
 
   if (loading && items.length === 0) {
-    return <LoadingSpinner />;
+    return (
+      <Layout>
+        <LoadingSpinner />
+      </Layout>
+    );
   }
 
   const hasItems = items.length > 0;

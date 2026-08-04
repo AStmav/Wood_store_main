@@ -22,12 +22,12 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
           
           <div className="space-y-4 text-center">
             <h3 className="text-lg font-semibold text-white">О компании</h3>
-            <Link to="/about" className="block group">
+            <Link to="/about" className="inline-flex min-h-[44px] items-center group">
               <p className="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-colors cursor-pointer">
                 Сказкин дом<br />
                 детская мебель и игрушки
@@ -37,21 +37,33 @@ const Footer = () => {
 
           <div className="space-y-4 text-center">
             <h3 className="text-lg font-semibold text-white">Каталог</h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1 text-sm">
               {categories.length > 0 ? (
-                categories.map((category) => (
-                  <li key={category.uuid} className="flex justify-center">
-                    <Link
-                      to={categoryPath(category)}
-                      className="text-gray-400 hover:text-white transition-colors"
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))
+                <>
+                  {categories.slice(0, 6).map((category) => (
+                    <li key={category.uuid} className="flex justify-center">
+                      <Link
+                        to={categoryPath(category)}
+                        className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors"
+                      >
+                        {category.name}
+                      </Link>
+                    </li>
+                  ))}
+                  {categories.length > 6 && (
+                    <li className="flex justify-center">
+                      <Link
+                        to="/"
+                        className="inline-flex min-h-[44px] items-center text-blue-300 hover:text-white transition-colors"
+                      >
+                        Весь каталог
+                      </Link>
+                    </li>
+                  )}
+                </>
               ) : (
                 <li className="flex justify-center">
-                  <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                  <Link to="/" className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors">
                     Весь каталог
                   </Link>
                 </li>
@@ -61,19 +73,19 @@ const Footer = () => {
 
           <div className="space-y-4 text-center">
             <h3 className="text-lg font-semibold text-white">Покупателям</h3>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1 text-sm">
               <li className="flex justify-center">
-                <Link to="/delivery" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/delivery" className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors">
                   Доставка и сборка
                 </Link>
               </li>
               <li className="flex justify-center">
-                <Link to="/warranty" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/warranty" className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors">
                   Гарантия
                 </Link>
               </li>
               <li className="flex justify-center">
-                <Link to="/installment" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/installment" className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors">
                   Рассрочка
                 </Link>
               </li>
@@ -140,17 +152,17 @@ const Footer = () => {
       <div className="border-t border-gray-800">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-2 text-sm">
-              <Link to={`/pages/${PERSONAL_DATA_POLICY_SLUG}`} className="text-gray-400 hover:text-white transition-colors">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-1 text-sm">
+              <Link to={`/pages/${PERSONAL_DATA_POLICY_SLUG}`} className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors">
                 Пользовательское соглашение
               </Link>
-              <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">Политика конфиденциальности</Link>
+              <Link to="/privacy" className="inline-flex min-h-[44px] items-center text-gray-400 hover:text-white transition-colors">Политика конфиденциальности</Link>
               <div className="text-gray-400 text-sm pt-2">
                 © 2024 Сказкин Дом. Все права защищены.
               </div>
             </div>
  
-            <div className="text-xs text-gray-500 leading-relaxed max-w-3xl mx-auto md:mx-0 text-center md:text-left">
+            <div className="hidden sm:block text-xs text-gray-500 leading-relaxed max-w-3xl mx-auto md:mx-0 text-center md:text-left">
               <p>
                 Предоставленная на сайте информация несёт справочный характер. Информация на сайте не является публичной офертой, определяемой положениями Статьи 437 ГК РФ. Цвет и фактура мебели могут отличаться от цвета и фактуры на фото в связи с различной цветопередачей и настройками монитора.
               </p>

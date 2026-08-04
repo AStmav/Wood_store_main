@@ -131,9 +131,9 @@ export default function CategoryPage() {
           ]}
         />
       )}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-8">
         {metaLoading && !meta ? (
-          <LoadingSpinner fullScreen />
+          <LoadingSpinner />
         ) : (
           <>
             {breadcrumbs.length > 0 && (
@@ -154,11 +154,11 @@ export default function CategoryPage() {
               </nav>
             )}
 
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
               {category?.name}
             </h1>
             {category?.description && (
-              <p className="text-gray-600 mb-8 max-w-3xl">{category.description}</p>
+              <p className="text-gray-600 mb-6 sm:mb-8 max-w-3xl">{category.description}</p>
             )}
 
             {children.length > 0 && (
@@ -169,7 +169,7 @@ export default function CategoryPage() {
                     <Link
                       key={child.uuid}
                       to={categoryPath(child)}
-                      className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                      className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-h-[44px] text-center hover:border-blue-400 hover:bg-blue-50 transition-colors flex items-center justify-center"
                     >
                       <span className="font-medium text-gray-800">{child.name}</span>
                     </Link>
@@ -185,7 +185,7 @@ export default function CategoryPage() {
                   <button
                     type="button"
                     onClick={() => handleSleepSize('')}
-                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                    className={`min-h-[44px] px-4 py-2.5 rounded-full border text-sm font-medium transition-colors ${
                       !sleepSize
                         ? 'bg-blue-600 text-white border-blue-600'
                         : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
@@ -198,7 +198,7 @@ export default function CategoryPage() {
                       key={item.value}
                       type="button"
                       onClick={() => handleSleepSize(item.value)}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                      className={`min-h-[44px] px-4 py-2.5 rounded-full border text-sm font-medium transition-colors ${
                         sleepSize === item.value
                           ? 'bg-blue-600 text-white border-blue-600'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'

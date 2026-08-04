@@ -5,7 +5,7 @@
   right: 0;
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
   color: white;
-  z-index: 9999;
+  z-index: 60;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   border-top: 1px solid #374151;
   transform: translateY(100%);
@@ -85,7 +85,7 @@
 }
 
 .cookie-banner__button {
-  padding: 10px 20px;
+  padding: 12px 20px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -93,6 +93,7 @@
   transition: all 0.2s ease;
   border: none;
   min-width: 100px;
+  min-height: 44px;
 }
 
 .cookie-banner__button--decline {

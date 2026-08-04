@@ -112,8 +112,10 @@ const NewsSlider = ({ news }) => {
       {showNavigation && (
         <>
           <button
+            type="button"
             onClick={prevSlide}
-            className="absolute -left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            className="absolute left-1 sm:-left-2 top-1/2 -translate-y-1/2 inline-flex min-h-[44px] min-w-[44px] items-center justify-center bg-white/80 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            aria-label="Предыдущий слайд"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -121,8 +123,10 @@ const NewsSlider = ({ news }) => {
           </button>
 
           <button
+            type="button"
             onClick={nextSlide}
-            className="absolute -right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            className="absolute right-1 sm:-right-2 top-1/2 -translate-y-1/2 inline-flex min-h-[44px] min-w-[44px] items-center justify-center bg-white/80 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+            aria-label="Следующий слайд"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -132,16 +136,22 @@ const NewsSlider = ({ news }) => {
       )}
 
       {showNavigation && (
-        <div className="flex justify-center mt-6 space-x-2">
+        <div className="flex justify-center mt-6 gap-1">
           {Array.from({ length: totalSlides }, (_, index) => (
             <button
               key={index}
+              type="button"
               onClick={() => goToSlide(index)}
-              className={`
-                w-3 h-3 rounded-full transition-all duration-200
-                ${currentSlide === index ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'}
-              `}
-            />
+              aria-label={`Слайд ${index + 1}`}
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center"
+            >
+              <span
+                className={`
+                  block w-2.5 h-2.5 rounded-full transition-all duration-200
+                  ${currentSlide === index ? 'bg-blue-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'}
+                `}
+              />
+            </button>
           ))}
         </div>
       )}

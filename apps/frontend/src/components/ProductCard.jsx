@@ -36,7 +36,7 @@ export default function ProductCard({ product }) {
     <>
       <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group h-full flex flex-col w-full">
         <Link to={productPath(product)} className="block flex-1 flex flex-col">
-          <div className="relative overflow-hidden w-full" style={{ aspectRatio: '16/9' }}>
+          <div className="relative overflow-hidden w-full aspect-[4/3]">
             <img
               src={product.image || '/placeholder-product.svg'}
               alt={product.name}
@@ -61,14 +61,14 @@ export default function ProductCard({ product }) {
 
           <div className="p-4 flex-1 flex flex-col">
             <div className="h-12 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors duration-200">
                 {product.name}
               </h3>
             </div>
 
             <div className="h-5 mb-2">
               {product.category && (
-                <p className="text-sm text-blue-600">{product.category.name}</p>
+                <p className="text-sm text-blue-600 truncate">{product.category.name}</p>
               )}
             </div>
 
@@ -89,7 +89,7 @@ export default function ProductCard({ product }) {
             type="button"
             onClick={handleAddToMyProducts}
             disabled={inMyProducts || isAdding || loading}
-            className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1 ${
+            className={`w-full min-h-[44px] px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1 ${
               inMyProducts
                 ? 'bg-gray-100 text-gray-500 cursor-default'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -110,13 +110,13 @@ export default function ProductCard({ product }) {
       </div>
 
       {showMessage && (
-        <div className="fixed bottom-6 inset-x-0 flex justify-center z-50">
-          <div className="bg-white shadow-lg px-4 py-3 rounded-lg text-gray-800 flex items-center space-x-3">
+        <div className="fixed bottom-24 sm:bottom-6 inset-x-0 flex justify-center z-[100]">
+          <div className="bg-white shadow-lg px-4 py-3 rounded-lg text-gray-800 flex items-center space-x-3 mx-4">
             <span>{showMessage}</span>
             <button
               type="button"
               onClick={() => setShowMessage(null)}
-              className="text-gray-500 hover:text-gray-700"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-500 hover:text-gray-700"
               aria-label="Закрыть уведомление"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -79,15 +79,27 @@ const ProductDetail = () => {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <Layout>
+        <LoadingSpinner />
+      </Layout>
+    );
   }
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    return (
+      <Layout>
+        <ErrorMessage message={error} />
+      </Layout>
+    );
   }
 
   if (!product) {
-    return <ErrorMessage message="Товар не найден" />;
+    return (
+      <Layout>
+        <ErrorMessage message="Товар не найден" />
+      </Layout>
+    );
   }
 
   // Канонический URL — slug; старые UUID-ссылки редиректим
@@ -122,18 +134,16 @@ const ProductDetail = () => {
           buildBreadcrumbJsonLd(crumbs),
         ]}
       />
-      <div className="py-8">
+      <div className="py-4 sm:py-8">
         <div className="max-w-6xl mx-auto px-4">
-          <nav className="mb-8">
-            <ol className="flex items-center space-x-2 text-sm text-gray-600">
+          <nav className="mb-6 sm:mb-8">
+            <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
               <li>
                 <Link to="/" className="hover:text-blue-600 transition-colors">
                   Главная
                 </Link>
               </li>
-              <li>
-                <span className="mx-2">/</span>
-              </li>
+              <li aria-hidden="true">/</li>
               <li>
                 <Link to="/" className="hover:text-blue-600 transition-colors">
                   Каталог
@@ -141,9 +151,7 @@ const ProductDetail = () => {
               </li>
               {product.category && (
                 <>
-                  <li>
-                    <span className="mx-2">/</span>
-                  </li>
+                  <li aria-hidden="true">/</li>
                   <li>
                     <Link
                       to={categoryPath(product.category)}
@@ -154,25 +162,23 @@ const ProductDetail = () => {
                   </li>
                 </>
               )}
-              <li>
-                <span className="mx-2">/</span>
-              </li>
-              <li className="text-gray-900 font-medium">
+              <li aria-hidden="true">/</li>
+              <li className="min-w-0 break-words text-gray-900 font-medium">
                 {product.name}
               </li>
             </ol>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             <ProductImageGallery product={product} />
 
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                   {product.name}
                 </h1>
                 {product.category && (
-                  <p className="text-lg mb-4">
+                  <p className="text-base sm:text-lg mb-4">
                     <Link
                       to={categoryPath(product.category)}
                       className="text-blue-600 hover:underline"
@@ -197,9 +203,14 @@ const ProductDetail = () => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Характеристики</h3>
                   <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                     {Object.entries(product.specifications).map(([key, value]) => (
-                      <div key={key} className="flex justify-between items-center border-b border-gray-200 pb-3 last:border-0">
-                        <span className="text-gray-600 font-medium">{key}:</span>
-                        <span className="text-gray-900 font-semibold">{value}</span>
+                      <div
+                        key={key}
+                        className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 border-b border-gray-200 pb-3 last:border-0"
+                      >
+                        <span className="text-gray-600 font-medium shrink-0">{key}:</span>
+                        <span className="text-gray-900 font-semibold sm:text-right break-words min-w-0">
+                          {value}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -263,13 +274,13 @@ const ProductDetail = () => {
       </div>
 
       {showMessage && (
-        <div className="fixed bottom-6 inset-x-0 flex justify-center z-50">
-          <div className="bg-white shadow-lg px-4 py-3 rounded-lg text-gray-800 flex items-center space-x-3">
+        <div className="fixed bottom-24 sm:bottom-6 inset-x-0 flex justify-center z-[100]">
+          <div className="bg-white shadow-lg px-4 py-3 rounded-lg text-gray-800 flex items-center space-x-3 mx-4">
             <span>{showMessage}</span>
             <button
               type="button"
               onClick={() => setShowMessage(null)}
-              className="text-gray-500 hover:text-gray-700"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-500 hover:text-gray-700"
               aria-label="Закрыть уведомление"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

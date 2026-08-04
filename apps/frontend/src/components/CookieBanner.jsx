@@ -8,15 +8,22 @@ const CookieBanner = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // Проверяем, дал ли пользователь согласие
     const consent = localStorage.getItem('cookie_consent_accepted') || localStorage.getItem('cookieConsent');
     if (!consent) {
-      // Небольшая задержка для плавного появления
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setShowBanner(true);
         setIsAnimating(true);
+        document.documentElement.classList.add('cookie-banner-visible');
       }, 1000);
+      return () => clearTimeout(timer);
     }
+    return undefined;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      document.documentElement.classList.remove('cookie-banner-visible');
+    };
   }, []);
 
   const acceptCookies = () => {
@@ -34,6 +41,7 @@ const CookieBanner = () => {
 
   const hideBanner = () => {
     setIsAnimating(false);
+    document.documentElement.classList.remove('cookie-banner-visible');
     setTimeout(() => {
       setShowBanner(false);
     }, 300);

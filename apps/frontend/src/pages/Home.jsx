@@ -126,67 +126,71 @@ export default function Home() {
         path="/"
         jsonLd={buildOrganizationJsonLd()}
       />
-      <div className="container mx-auto px-4 py-8">
-        <NewsSection news={news} loading={newsLoading} />
+      <div className="py-4 sm:py-8">
+        <div className="container mx-auto px-4">
+          <NewsSection news={news} loading={newsLoading} />
+        </div>
 
         <BestsellersSection />
 
-        <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
-          Сказкин Дом — каталог детской мебели
-        </h1>
+        <div className="container mx-auto px-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-8 text-center">
+            Сказкин Дом — каталог детской мебели
+          </h1>
 
-        <div className="mb-8">
-          <SearchBar
-            onSearch={handleSearch}
-            onFiltersChange={handleFiltersChange}
-            filters={filters}
-            categories={categories}
-            priceRange={priceRange}
-          />
-        </div>
-
-        {error && (
-          <ErrorMessage message="Ошибка загрузки товаров. Попробуйте позже." />
-        )}
-
-        {!error && loading && products.length === 0 && (
-          <LoadingSpinner />
-        )}
-
-        {!error && !loading && products.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <p className="text-gray-500 text-lg">
-              {hasActiveQuery ? 'По вашему запросу ничего не найдено' : 'Товары не найдены'}
-            </p>
-            <p className="text-sm text-gray-400 mt-2">
-              {hasActiveQuery
-                ? 'Попробуйте изменить параметры поиска'
-                : 'Добавьте товары через админ-панель'}
-            </p>
-          </div>
-        )}
-
-        {!error && products.length > 0 && (
-          <div className="relative">
-            {loading && (
-              <div className="absolute inset-0 z-10 flex items-start justify-center bg-gray-50/70 pt-8">
-                <LoadingSpinner />
-              </div>
-            )}
-            <ProductInfiniteGrid
-              products={products}
-              count={count}
-              hasMore={hasMore}
-              loadingMore={loadingMore}
-              onLoadMore={loadMore}
+          <div className="mb-8">
+            <SearchBar
+              onSearch={handleSearch}
+              onFiltersChange={handleFiltersChange}
+              filters={filters}
+              categories={categories}
+              priceRange={priceRange}
             />
           </div>
-        )}
+
+          {error && (
+            <ErrorMessage message="Ошибка загрузки товаров. Попробуйте позже." />
+          )}
+
+          {!error && loading && products.length === 0 && (
+            <LoadingSpinner />
+          )}
+
+          {!error && !loading && products.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-400 mb-4">
+                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 text-lg">
+                {hasActiveQuery ? 'По вашему запросу ничего не найдено' : 'Товары не найдены'}
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                {hasActiveQuery
+                  ? 'Попробуйте изменить параметры поиска'
+                  : 'Добавьте товары через админ-панель'}
+              </p>
+            </div>
+          )}
+
+          {!error && products.length > 0 && (
+            <div className="relative">
+              {loading && (
+                <div className="absolute inset-0 z-10 flex items-start justify-center bg-gray-50/70 pt-8">
+                  <LoadingSpinner />
+                </div>
+              )}
+              <ProductInfiniteGrid
+                products={products}
+                count={count}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+                onLoadMore={loadMore}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );

@@ -13,16 +13,16 @@ const sizeClasses = {
     regular: 'text-base font-bold text-gray-900',
   },
   md: {
-    current: 'text-xl font-bold text-red-600',
+    current: 'text-lg sm:text-xl font-bold text-red-600',
     old: 'text-sm text-gray-400 line-through',
-    request: 'text-xl font-semibold text-gray-900',
-    regular: 'text-xl font-bold text-gray-900',
+    request: 'text-lg sm:text-xl font-semibold text-gray-900',
+    regular: 'text-lg sm:text-xl font-bold text-gray-900',
   },
   lg: {
-    current: 'text-3xl font-bold text-red-600',
+    current: 'text-2xl sm:text-3xl font-bold text-red-600',
     old: 'text-base text-gray-400 line-through',
-    request: 'text-3xl font-semibold text-gray-900',
-    regular: 'text-3xl font-bold text-gray-900',
+    request: 'text-2xl sm:text-3xl font-semibold text-gray-900',
+    regular: 'text-2xl sm:text-3xl font-bold text-gray-900',
   },
 };
 
@@ -40,11 +40,11 @@ export default function ProductPriceDisplay({ product, size = 'md', className = 
   if (hasProductDiscount(product)) {
     return (
       <div className={`space-y-1 ${className}`}>
-        <div className={`${styles.current} whitespace-nowrap`}>
+        <div className={styles.current}>
           {formatPrice(getProductDisplayPrice(product))} ₽
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`${styles.old} whitespace-nowrap`}>
+          <span className={styles.old}>
             {formatPrice(product.price)} ₽
           </span>
           <DiscountBadge percent={product.discount_percent} variant="inline" />
@@ -55,7 +55,7 @@ export default function ProductPriceDisplay({ product, size = 'md', className = 
 
   return (
     <div className={className}>
-      <span className={`${styles.regular} whitespace-nowrap`}>
+      <span className={styles.regular}>
         {formatPrice(product?.price)} ₽
       </span>
     </div>

@@ -108,7 +108,7 @@ export default function Header() {
   const myProductsLink = (
     <Link
       to="/my-products"
-      className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+      className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center p-2.5 text-gray-700 hover:text-blue-600 transition-colors"
       title="Мои товары"
       onClick={closeMobileMenu}
     >
@@ -130,7 +130,7 @@ export default function Header() {
           <div className="flex items-center space-x-2 md:space-x-3">
             <button
               type="button"
-              className="md:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="md:hidden inline-flex min-h-[44px] min-w-[44px] items-center justify-center p-2.5 rounded-md text-gray-600 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               onClick={toggleMobileMenu}
               aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
             >
@@ -144,15 +144,17 @@ export default function Header() {
                 </svg>
               )}
             </button>
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 flex items-center justify-center">
+            <Link to="/" className="flex min-w-0 items-center space-x-2">
+              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
                 <img
                   src={logoImage}
                   alt="Сказкин дом"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-2xl md:text-3xl font-bold text-gray-900">Сказкин дом</span>
+              <span className="truncate max-w-[9.5rem] sm:max-w-none text-lg sm:text-2xl md:text-3xl font-bold text-gray-900">
+                Сказкин дом
+              </span>
             </Link>
           </div>
 
@@ -164,6 +166,7 @@ export default function Header() {
             >
               <button
                 type="button"
+                onClick={() => setIsMegaMenuOpen((prev) => !prev)}
                 className={`flex items-center px-3 py-2 rounded-md text-lg font-medium transition-colors ${
                   isMegaMenuOpen ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
                 }`}
@@ -212,12 +215,12 @@ export default function Header() {
 
       {isMobileMenuOpen && (
         <>
-          <div className="md:hidden fixed inset-0 bg-black/40 z-40" onClick={closeMobileMenu} />
-          <div className="md:hidden fixed top-16 inset-x-0 bottom-0 bg-white border-t border-gray-200 shadow-lg z-50 overflow-y-auto">
+          <div className="md:hidden fixed inset-0 bg-black/40 z-[70]" onClick={closeMobileMenu} />
+          <div className="md:hidden fixed top-16 inset-x-0 bottom-0 bg-white border-t border-gray-200 shadow-lg z-[80] overflow-y-auto">
             <nav className="px-4 py-6 space-y-4 max-w-lg mx-auto">
               <Link
                 to="/"
-                className="block text-lg font-semibold text-gray-900"
+                className="flex min-h-[44px] items-center text-lg font-semibold text-gray-900"
                 onClick={closeMobileMenu}
               >
                 Главная
@@ -225,7 +228,7 @@ export default function Header() {
 
               <Link
                 to="/about"
-                className="block px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
+                className="flex min-h-[44px] items-center px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
                 onClick={closeMobileMenu}
               >
                 О нас
@@ -264,7 +267,7 @@ export default function Header() {
 
               <Link
                 to="/my-products"
-                className="flex items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
+                className="flex min-h-[44px] items-center justify-between px-4 py-2 rounded-lg border border-gray-200 text-gray-800 hover:border-blue-300 hover:text-blue-700"
                 onClick={closeMobileMenu}
               >
                 <span>Мои товары</span>

@@ -41,11 +41,11 @@ const BestsellersSection = () => {
   }
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-8 sm:py-12 bg-gray-50 mb-8">
       <div className="container mx-auto px-4">
         {/* Заголовок секции */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
             Подборка товаров
           </h2>
         </div>

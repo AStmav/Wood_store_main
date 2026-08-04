@@ -84,10 +84,11 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
           />
           {searchTerm && (
             <button
+              type="button"
               onClick={clearSearch}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400 hover:text-gray-600"
+              aria-label="Очистить поиск"
             >
-              {/* Иконка X */}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -97,8 +98,9 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
         
         {/* Кнопка фильтров */}
         <button
+          type="button"
           onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-          className={`flex items-center gap-2 px-4 py-3 border rounded-lg transition-colors ${
+          className={`inline-flex min-h-[44px] items-center gap-2 px-3 sm:px-4 py-3 border rounded-lg transition-colors ${
             hasActiveFilters 
               ? 'bg-blue-50 border-blue-300 text-blue-700' 
               : 'border-gray-300 hover:border-gray-400'
@@ -150,14 +152,14 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
                   placeholder="От"
                   value={localFilters.minPrice}
                   onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <input
                   type="number"
                   placeholder="До"
                   value={localFilters.maxPrice}
                   onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -185,8 +187,9 @@ const SearchBar = ({ onSearch, onFiltersChange, filters, categories, priceRange 
           {/* Кнопки управления фильтрами */}
           <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
             <button
+              type="button"
               onClick={clearFilters}
-              className="text-sm text-gray-600 hover:text-gray-800 underline"
+              className="min-h-[44px] text-sm text-gray-600 hover:text-gray-800 underline px-1"
             >
               Сбросить фильтры
             </button>

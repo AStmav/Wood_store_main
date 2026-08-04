@@ -13,7 +13,7 @@ const NewsSection = ({ news, loading }) => {
     return (
       <div className="mb-8">
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Последние новости</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Последние новости</h2>
           <p className="text-gray-600">Будьте в курсе событий нашего магазина</p>
         </div>
         <div className="flex justify-center">
@@ -30,7 +30,7 @@ const NewsSection = ({ news, loading }) => {
     return (
       <div className="mb-8">
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Последние новости</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Последние новости</h2>
           <p className="text-gray-600">Будьте в курсе событий нашего магазина</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -47,7 +47,7 @@ const NewsSection = ({ news, loading }) => {
     <div className="mb-8">
       {/* Заголовок новостного раздела */}
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Последние новости</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Последние новости</h2>
         <p className="text-gray-600">Будьте в курсе событий нашего магазина</p>
       </div>
       <NewsSlider news={news} />

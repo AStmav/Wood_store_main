@@ -44,15 +44,27 @@ const NewsDetail = () => {
   }, [slug]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <Layout>
+        <LoadingSpinner />
+      </Layout>
+    );
   }
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    return (
+      <Layout>
+        <ErrorMessage message={error} />
+      </Layout>
+    );
   }
 
   if (!news) {
-    return <ErrorMessage message="Новость не найдена" />;
+    return (
+      <Layout>
+        <ErrorMessage message="Новость не найдена" />
+      </Layout>
+    );
   }
 
   return (
