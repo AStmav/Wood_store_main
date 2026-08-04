@@ -9,6 +9,7 @@ import { useMyProducts } from '../context/MyProductsContext.jsx';
 import ProductPriceDisplay from '../components/ProductPriceDisplay.jsx';
 import ProductImageGallery from '../components/ProductImageGallery.jsx';
 import { trackProductView } from '../api/analytics.js';
+import { getErrorVariant, getFriendlyErrorMessage } from '../utils/apiError.js';
 import {
   isUuid,
   productPath,
@@ -23,32 +24,31 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorVariant, setErrorVariant] = useState('unavailable');
   const [showMessage, setShowMessage] = useState(null);
   const { addProduct, isInMyProducts, removeProduct, items } = useMyProducts();
 
-  useEffect(() => {
-    const loadProduct = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await productService.getProductById(slugOrId);
-        setProduct(data);
-      } catch (err) {
-        console.error('Error loading product:', err);
-        if (err.response?.status === 404) {
-          setError('Товар не найден');
-        } else if (err.response?.status >= 500) {
-          setError('Ошибка сервера. Попробуйте позже.');
-        } else if (err.code === 'NETWORK_ERROR' || !err.response) {
-          setError('Ошибка сети. Проверьте подключение к интернету.');
-        } else {
-          setError('Не удалось загрузить товар');
-        }
-      } finally {
-        setLoading(false);
+  const loadProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await productService.getProductById(slugOrId);
+      setProduct(data);
+    } catch (err) {
+      console.error('Error loading product:', err);
+      setErrorVariant(getErrorVariant(err));
+      if (err.response?.status === 404) {
+        setError('Товар не найден');
+      } else {
+        setError(getFriendlyErrorMessage(err, 'Не удалось загрузить товар'));
       }
-    };
+      setProduct(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     if (slugOrId) {
       loadProduct();
     }
@@ -89,7 +89,11 @@ const ProductDetail = () => {
   if (error) {
     return (
       <Layout>
-        <ErrorMessage message={error} />
+        <ErrorMessage
+          variant={errorVariant}
+          message={error}
+          onRetry={loadProduct}
+        />
       </Layout>
     );
   }
@@ -97,7 +101,7 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <Layout>
-        <ErrorMessage message="Товар не найден" />
+        <ErrorMessage variant="notFound" message="Товар не найден" />
       </Layout>
     );
   }

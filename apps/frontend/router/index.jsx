@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react';
 import CookieBanner from '../src/components/CookieBanner.jsx';
 import YandexMetrika from '../src/components/YandexMetrika.jsx';
 import LoadingSpinner from '../src/components/LoadingSpinner.jsx';
+import ErrorBoundary from '../src/components/ErrorBoundary.jsx';
 
 const Home = lazy(() => import('../src/pages/Home.jsx'));
 const MyProducts = lazy(() => import('../src/pages/MyProducts.jsx'));
@@ -39,24 +40,26 @@ export default function Router() {
   return (
     <BrowserRouter>
       <YandexMetrika />
-      <Suspense fallback={<RouteFallback />}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/catalog/:slugOrId" element={<CategoryPage />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/delivery" element={<DeliveryPage />} />
-          <Route path="/warranty" element={<WarrantyPage />} />
-          <Route path="/installment" element={<InstallmentPage />} />
-          <Route path="/pages/:slug" element={<LegalPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/my-products" element={<MyProducts />} />
-          <Route path="/cart" element={<Navigate to="/my-products" replace />} />
-          <Route path="/favorites" element={<Navigate to="/my-products" replace />} />
-          <Route path="/news/:slug" element={<NewsDetail />} />
-          <Route path="/product/:slugOrId" element={<ProductDetail />} />
-        </Routes>
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/catalog/:slugOrId" element={<CategoryPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/delivery" element={<DeliveryPage />} />
+            <Route path="/warranty" element={<WarrantyPage />} />
+            <Route path="/installment" element={<InstallmentPage />} />
+            <Route path="/pages/:slug" element={<LegalPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/my-products" element={<MyProducts />} />
+            <Route path="/cart" element={<Navigate to="/my-products" replace />} />
+            <Route path="/favorites" element={<Navigate to="/my-products" replace />} />
+            <Route path="/news/:slug" element={<NewsDetail />} />
+            <Route path="/product/:slugOrId" element={<ProductDetail />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
       <CookieBanner />
     </BrowserRouter>
   );

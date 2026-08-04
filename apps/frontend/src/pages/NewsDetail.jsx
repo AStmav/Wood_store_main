@@ -6,38 +6,38 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import SeoHead from '../components/SeoHead.jsx';
 import { getMediaUrl } from '../config/api';
+import { getErrorVariant, getFriendlyErrorMessage } from '../utils/apiError.js';
 
 const NewsDetail = () => {
   const { slug } = useParams();
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorVariant, setErrorVariant] = useState('unavailable');
+
+  const loadNews = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Loading news with slug:', slug);
+      const data = await newsService.getNewsBySlug(slug);
+      console.log('News data received:', data);
+      setNews(data);
+    } catch (err) {
+      console.error('Error loading news:', err);
+      setErrorVariant(getErrorVariant(err));
+      if (err.response?.status === 404) {
+        setError('Новость не найдена');
+      } else {
+        setError(getFriendlyErrorMessage(err, 'Не удалось загрузить новость'));
+      }
+      setNews(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadNews = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log('Loading news with slug:', slug);
-        const data = await newsService.getNewsBySlug(slug);
-        console.log('News data received:', data);
-        setNews(data);
-      } catch (err) {
-        console.error('Error loading news:', err);
-        if (err.response?.status === 404) {
-          setError('Новость не найдена');
-        } else if (err.response?.status >= 500) {
-          setError('Ошибка сервера. Попробуйте позже.');
-        } else if (err.code === 'NETWORK_ERROR' || !err.response) {
-          setError('Ошибка сети. Проверьте подключение к интернету.');
-        } else {
-          setError('Не удалось загрузить новость');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (slug) {
       loadNews();
     }
@@ -54,7 +54,11 @@ const NewsDetail = () => {
   if (error) {
     return (
       <Layout>
-        <ErrorMessage message={error} />
+        <ErrorMessage
+          variant={errorVariant}
+          message={error}
+          onRetry={loadNews}
+        />
       </Layout>
     );
   }
@@ -62,7 +66,7 @@ const NewsDetail = () => {
   if (!news) {
     return (
       <Layout>
-        <ErrorMessage message="Новость не найдена" />
+        <ErrorMessage variant="notFound" message="Новость не найдена" />
       </Layout>
     );
   }

@@ -149,7 +149,11 @@ export default function Home() {
           </div>
 
           {error && (
-            <ErrorMessage message="Ошибка загрузки товаров. Попробуйте позже." />
+            <ErrorMessage
+              variant="unavailable"
+              message="Не удалось загрузить каталог. Сервер не отвечает или временно недоступен."
+              onRetry={() => window.location.reload()}
+            />
           )}
 
           {!error && loading && products.length === 0 && (

@@ -27,7 +27,7 @@ export default function CatalogMegaMenu({
 
   return (
     <div
-      className="absolute top-full left-0 right-0 md:right-auto mt-2 z-50 w-full md:w-[min(72rem,calc(100%-2rem))] max-w-[calc(100vw-2rem)]"
+      className="absolute top-full left-0 mt-2 z-50 w-[min(72rem,calc(100vw-2rem))]"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

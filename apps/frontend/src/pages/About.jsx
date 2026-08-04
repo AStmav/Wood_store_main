@@ -5,27 +5,36 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import SeoHead from '../components/SeoHead.jsx';
 import { getMediaUrl } from '../config/api';
+import { getErrorVariant, getFriendlyErrorMessage } from '../utils/apiError.js';
 
 const About = () => {
   const [about, setAbout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorVariant, setErrorVariant] = useState('unavailable');
+
+  const loadAbout = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await aboutService.getActiveAbout();
+      setAbout(data);
+    } catch (err) {
+      console.error('Error loading about:', err);
+      setErrorVariant(getErrorVariant(err));
+      setError(
+        getFriendlyErrorMessage(
+          err,
+          'Не удалось загрузить информацию о компании',
+        ),
+      );
+      setAbout(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadAbout = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await aboutService.getActiveAbout();
-        setAbout(data);
-      } catch (err) {
-        setError('Не удалось загрузить информацию о компании');
-        console.error('Error loading about:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadAbout();
   }, []);
 
@@ -40,7 +49,11 @@ const About = () => {
   if (error) {
     return (
       <Layout>
-        <ErrorMessage message={error} />
+        <ErrorMessage
+          variant={errorVariant}
+          message={error}
+          onRetry={loadAbout}
+        />
       </Layout>
     );
   }
@@ -48,7 +61,11 @@ const About = () => {
   if (!about) {
     return (
       <Layout>
-        <ErrorMessage message="Информация о компании не найдена" />
+        <ErrorMessage
+          variant="notFound"
+          title="Раздел «О нас» пока пуст"
+          message="Информация о компании ещё не опубликована. Загляните в каталог или зайдите позже."
+        />
       </Layout>
     );
   }

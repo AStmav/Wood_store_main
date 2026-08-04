@@ -7,6 +7,7 @@ import SeoHead from '../components/SeoHead.jsx';
 import ProductInfiniteGrid from '../components/ProductInfiniteGrid.jsx';
 import { productService } from '../api/productService.js';
 import usePaginatedProducts from '../hooks/usePaginatedProducts.js';
+import { getErrorVariant, getFriendlyErrorMessage } from '../utils/apiError.js';
 import {
   isUuid,
   categoryPath,
@@ -20,6 +21,7 @@ export default function CategoryPage() {
   const [meta, setMeta] = useState(null);
   const [metaLoading, setMetaLoading] = useState(true);
   const [metaError, setMetaError] = useState(null);
+  const [metaErrorVariant, setMetaErrorVariant] = useState('unavailable');
   const sleepSize = searchParams.get('sleep_size') || '';
 
   useEffect(() => {
@@ -36,7 +38,8 @@ export default function CategoryPage() {
       } catch (err) {
         console.error('Category meta error:', err);
         if (!cancelled) {
-          setMetaError('Не удалось загрузить категорию.');
+          setMetaErrorVariant(getErrorVariant(err));
+          setMetaError(getFriendlyErrorMessage(err, 'Не удалось загрузить категорию.'));
           setMeta(null);
         }
       } finally {
@@ -91,7 +94,11 @@ export default function CategoryPage() {
   if (metaError && !meta) {
     return (
       <Layout>
-        <ErrorMessage message={metaError} />
+        <ErrorMessage
+          variant={metaErrorVariant}
+          message={metaError}
+          onRetry={() => window.location.reload()}
+        />
       </Layout>
     );
   }
@@ -213,7 +220,11 @@ export default function CategoryPage() {
             )}
 
             {productsError && (
-              <ErrorMessage message="Не удалось загрузить товары категории." />
+              <ErrorMessage
+                variant="unavailable"
+                message="Не удалось загрузить товары категории."
+                onRetry={() => window.location.reload()}
+              />
             )}
 
             {!productsError && loading && products.length === 0 && (
