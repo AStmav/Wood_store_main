@@ -8,7 +8,7 @@ export default function MobileCatalogMenu({ categories, onCategorySelect }) {
       setExpandedId((prev) => (prev === category.uuid ? null : category.uuid));
       return;
     }
-    onCategorySelect(category.uuid);
+    onCategorySelect(category);
   };
 
   if (!categories.length) {
@@ -60,7 +60,7 @@ export default function MobileCatalogMenu({ categories, onCategorySelect }) {
                 <li>
                   <button
                     type="button"
-                    onClick={() => onCategorySelect(category.uuid)}
+                    onClick={() => onCategorySelect(category)}
                     className="w-full text-left py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
                   >
                     Все: {category.name}
@@ -70,7 +70,7 @@ export default function MobileCatalogMenu({ categories, onCategorySelect }) {
                   <li key={child.uuid}>
                     <button
                       type="button"
-                      onClick={() => onCategorySelect(child.uuid)}
+                      onClick={() => onCategorySelect(child)}
                       className="w-full text-left py-2 pl-3 text-sm text-gray-600 hover:text-blue-600 border-l-2 border-transparent hover:border-blue-200 transition-colors"
                     >
                       {child.name}

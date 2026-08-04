@@ -74,7 +74,7 @@ export default function MyProducts() {
                       />
                       <div className="flex-1 space-y-1">
                         <Link
-                          to={`/product/${item.product.uuid}`}
+                          to={`/product/${item.product.slug || item.product.uuid}`}
                           className="text-lg md:text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                         >
                           {item.product.name}

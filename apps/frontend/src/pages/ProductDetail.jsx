@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { productService } from '../api/productService.js';
 import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import SeoHead from '../components/SeoHead.jsx';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
 import ProductPriceDisplay from '../components/ProductPriceDisplay.jsx';
 import ProductImageGallery from '../components/ProductImageGallery.jsx';
 import { trackProductView } from '../api/analytics.js';
+import {
+  isUuid,
+  productPath,
+  categoryPath,
+  buildProductJsonLd,
+  buildOrganizationJsonLd,
+  buildBreadcrumbJsonLd,
+} from '../seo/seoConfig.js';
 
 const ProductDetail = () => {
-  const { uuid } = useParams();
+  const { slugOrId } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,9 +31,7 @@ const ProductDetail = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log('Loading product with uuid:', uuid);
-        const data = await productService.getProductById(uuid);
-        console.log('Product data received:', data);
+        const data = await productService.getProductById(slugOrId);
         setProduct(data);
       } catch (err) {
         console.error('Error loading product:', err);
@@ -42,10 +49,10 @@ const ProductDetail = () => {
       }
     };
 
-    if (uuid) {
+    if (slugOrId) {
       loadProduct();
     }
-  }, [uuid]);
+  }, [slugOrId]);
 
   useEffect(() => {
     if (product?.uuid) {
@@ -83,11 +90,40 @@ const ProductDetail = () => {
     return <ErrorMessage message="Товар не найден" />;
   }
 
+  // Канонический URL — slug; старые UUID-ссылки редиректим
+  if (product.slug && isUuid(slugOrId) && slugOrId !== product.slug) {
+    return <Navigate to={productPath(product)} replace />;
+  }
+
+  const ogImage =
+    product.images?.[0]?.image || product.image || '/logo.png';
+  const description =
+    product.description ||
+    `${product.name} — купить в Сказкин Дом, Якутск`;
+
+  const crumbs = [
+    { name: 'Главная', path: '/' },
+    ...(product.category
+      ? [{ name: product.category.name, path: categoryPath(product.category) }]
+      : []),
+    { name: product.name, path: productPath(product) },
+  ];
+
   return (
     <Layout>
+      <SeoHead
+        title={product.name}
+        description={description}
+        path={productPath(product)}
+        image={ogImage}
+        jsonLd={[
+          buildOrganizationJsonLd(),
+          buildProductJsonLd(product),
+          buildBreadcrumbJsonLd(crumbs),
+        ]}
+      />
       <div className="py-8">
         <div className="max-w-6xl mx-auto px-4">
-          {/* Хлебные крошки */}
           <nav className="mb-8">
             <ol className="flex items-center space-x-2 text-sm text-gray-600">
               <li>
@@ -108,8 +144,13 @@ const ProductDetail = () => {
                   <li>
                     <span className="mx-2">/</span>
                   </li>
-                  <li className="text-gray-900 font-medium">
-                    {product.category.name}
+                  <li>
+                    <Link
+                      to={categoryPath(product.category)}
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      {product.category.name}
+                    </Link>
                   </li>
                 </>
               )}
@@ -122,24 +163,26 @@ const ProductDetail = () => {
             </ol>
           </nav>
 
-          {/* Основной контент */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <ProductImageGallery product={product} />
 
-            {/* Информация о товаре */}
             <div className="space-y-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   {product.name}
                 </h1>
                 {product.category && (
-                  <p className="text-lg text-blue-600 mb-4">
-                    {product.category.name}
+                  <p className="text-lg mb-4">
+                    <Link
+                      to={categoryPath(product.category)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {product.category.name}
+                    </Link>
                   </p>
                 )}
               </div>
 
-              {/* Описание */}
               {product.description && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Описание</h3>
@@ -149,7 +192,6 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* Характеристики */}
               {product.specifications && Object.keys(product.specifications).length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Характеристики</h3>
@@ -164,7 +206,6 @@ const ProductDetail = () => {
                 </div>
               )}
 
-              {/* Цена и добавление в список */}
               <div className="border-t pt-6">
                 <div className="mb-6">
                   <ProductPriceDisplay product={product} size="lg" />
@@ -207,9 +248,8 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Кнопка "Назад к каталогу" */}
           <div className="mt-8 text-center">
-            <Link 
+            <Link
               to="/"
               className="inline-flex items-center px-6 py-3 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors duration-200"
             >

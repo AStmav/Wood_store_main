@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import SeoHead from '../components/SeoHead.jsx';
 import ProductInfiniteGrid from '../components/ProductInfiniteGrid.jsx';
 import { productService } from '../api/productService.js';
 import usePaginatedProducts from '../hooks/usePaginatedProducts.js';
+import {
+  isUuid,
+  categoryPath,
+  buildOrganizationJsonLd,
+  buildBreadcrumbJsonLd,
+} from '../seo/seoConfig.js';
 
 export default function CategoryPage() {
-  const { categoryUuid } = useParams();
+  const { slugOrId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const [meta, setMeta] = useState(null);
   const [metaLoading, setMetaLoading] = useState(true);
@@ -22,7 +29,7 @@ export default function CategoryPage() {
       try {
         setMetaLoading(true);
         setMetaError(null);
-        const filtersData = await productService.getCategoryFilters(categoryUuid);
+        const filtersData = await productService.getCategoryFilters(slugOrId);
         if (!cancelled) {
           setMeta(filtersData);
         }
@@ -43,15 +50,15 @@ export default function CategoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [categoryUuid]);
+  }, [slugOrId]);
 
   const fetchPage = useCallback(
     async (page) =>
-      productService.getCategoryProducts(categoryUuid, {
+      productService.getCategoryProducts(slugOrId, {
         page,
         sleep_size: sleepSize || undefined,
       }),
-    [categoryUuid, sleepSize],
+    [slugOrId, sleepSize],
   );
 
   const {
@@ -62,7 +69,7 @@ export default function CategoryPage() {
     loadingMore,
     error: productsError,
     loadMore,
-  } = usePaginatedProducts(fetchPage, [categoryUuid, sleepSize]);
+  } = usePaginatedProducts(fetchPage, [slugOrId, sleepSize]);
 
   const handleSleepSize = (value) => {
     const next = new URLSearchParams(searchParams);
@@ -89,8 +96,41 @@ export default function CategoryPage() {
     );
   }
 
+  if (category?.slug && isUuid(slugOrId) && slugOrId !== category.slug) {
+    const qs = searchParams.toString();
+    return (
+      <Navigate
+        to={`${categoryPath(category)}${qs ? `?${qs}` : ''}`}
+        replace
+      />
+    );
+  }
+
+  const crumbLd = [
+    { name: 'Главная', path: '/' },
+    ...breadcrumbs.map((item) => ({
+      name: item.name,
+      path: categoryPath(item),
+    })),
+  ];
+
   return (
     <Layout>
+      {category && (
+        <SeoHead
+          title={category.name}
+          description={
+            category.description ||
+            `${category.name} — каталог Сказкин Дом в Якутске`
+          }
+          path={categoryPath(category)}
+          image={category.image}
+          jsonLd={[
+            buildOrganizationJsonLd(),
+            buildBreadcrumbJsonLd(crumbLd),
+          ]}
+        />
+      )}
       <div className="container mx-auto px-4 py-8">
         {metaLoading && !meta ? (
           <LoadingSpinner fullScreen />
@@ -102,10 +142,10 @@ export default function CategoryPage() {
                 {breadcrumbs.map((item) => (
                   <span key={item.uuid} className="flex items-center gap-1">
                     <span>/</span>
-                    {item.uuid === categoryUuid ? (
+                    {item.slug === category?.slug || item.uuid === slugOrId ? (
                       <span className="text-gray-800 font-medium">{item.name}</span>
                     ) : (
-                      <Link to={`/catalog/${item.uuid}`} className="hover:text-blue-600">
+                      <Link to={categoryPath(item)} className="hover:text-blue-600">
                         {item.name}
                       </Link>
                     )}
@@ -128,7 +168,7 @@ export default function CategoryPage() {
                   {children.map((child) => (
                     <Link
                       key={child.uuid}
-                      to={`/catalog/${child.uuid}`}
+                      to={categoryPath(child)}
                       className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
                     >
                       <span className="font-medium text-gray-800">{child.name}</span>

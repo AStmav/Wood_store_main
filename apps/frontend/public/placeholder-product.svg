@@ -1,1 +1,7 @@
- 
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Нет изображения">
+  <rect width="800" height="600" fill="#f3f4f6"/>
+  <rect x="280" y="200" width="240" height="160" rx="12" fill="#e5e7eb" stroke="#d1d5db" stroke-width="2"/>
+  <circle cx="360" cy="255" r="22" fill="#d1d5db"/>
+  <path d="M300 340 L360 290 L400 320 L460 250 L520 340 Z" fill="#d1d5db"/>
+  <text x="400" y="420" text-anchor="middle" fill="#9ca3af" font-family="system-ui,sans-serif" font-size="22">Нет фото</text>
+</svg>

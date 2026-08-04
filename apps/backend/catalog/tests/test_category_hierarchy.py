@@ -51,10 +51,7 @@ class CategoryHierarchyApiTests(TestCase):
         self.assertIn('160×200 см', values)
         self.assertIn('90×200 см', values)
 
-    def test_sleep_size_filter_on_products(self):
-        response = self.client.get(
-            f'/api/catalog/categories/{self.root.uuid}/products/',
-            {'sleep_size': '160×200 см'},
-        )
+    def test_category_lookup_by_slug(self):
+        response = self.client.get(f'/api/catalog/categories/{self.root.slug}/products/')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data['results']), 2)

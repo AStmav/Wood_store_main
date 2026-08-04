@@ -41,6 +41,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('seo.urls')),
     path('api/', include('news.urls')),
     path('api/', include('about.urls')),  # Раздел "О нас"
     path('api/', include('pages.urls')),

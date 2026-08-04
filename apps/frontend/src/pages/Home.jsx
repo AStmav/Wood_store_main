@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout.jsx';
 import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import SeoHead from '../components/SeoHead.jsx';
 import SearchBar from '../components/SearchBar.jsx';
 import NewsSection from '../components/NewsSection.jsx';
 import BestsellersSection from '../components/BestsellersSection.jsx';
@@ -10,6 +11,11 @@ import ProductInfiniteGrid from '../components/ProductInfiniteGrid.jsx';
 import { newsService } from '../api/newsService.js';
 import { productService, buildSearchParams } from '../api/productService.js';
 import usePaginatedProducts from '../hooks/usePaginatedProducts.js';
+import {
+  DEFAULT_DESCRIPTION,
+  SITE_NAME,
+  buildOrganizationJsonLd,
+} from '../seo/seoConfig.js';
 
 const DEFAULT_FILTERS = {
   category: '',
@@ -114,13 +120,19 @@ export default function Home() {
 
   return (
     <Layout>
+      <SeoHead
+        title={`${SITE_NAME} — детская мебель в Якутске`}
+        description={DEFAULT_DESCRIPTION}
+        path="/"
+        jsonLd={buildOrganizationJsonLd()}
+      />
       <div className="container mx-auto px-4 py-8">
         <NewsSection news={news} loading={newsLoading} />
 
         <BestsellersSection />
 
         <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
-          Каталог товаров
+          Сказкин Дом — каталог детской мебели
         </h1>
 
         <div className="mb-8">

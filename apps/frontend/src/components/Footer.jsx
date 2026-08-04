@@ -1,13 +1,12 @@
 import { PERSONAL_DATA_POLICY_SLUG } from '../constants/legal.js';
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { productService } from '../api/productService.js';
+import { categoryPath } from '../seo/seoConfig.js';
 
 const Footer = () => {
   const [categories, setCategories] = useState([]);
-  const navigate = useNavigate();
 
-  // Загрузка категорий при монтировании компонента
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -21,18 +20,11 @@ const Footer = () => {
     loadCategories();
   }, []);
 
-  // Функция выбора категории из футера
-  const handleCategorySelect = (categoryUuid) => {
-    navigate('/', { state: { selectedCategory: categoryUuid } });
-  };
-
   return (
     <footer className="bg-gray-900 text-white">
-      {/* Основной контент футера */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-items-center">
           
-          {/* О компании */}
           <div className="space-y-4 text-center">
             <h3 className="text-lg font-semibold text-white">О компании</h3>
             <Link to="/about" className="block group">
@@ -43,42 +35,48 @@ const Footer = () => {
             </Link>
           </div>
 
-          {/* Каталог */}
           <div className="space-y-4 text-center">
             <h3 className="text-lg font-semibold text-white">Каталог</h3>
             <ul className="space-y-2 text-sm">
               {categories.length > 0 ? (
                 categories.map((category) => (
                   <li key={category.uuid} className="flex justify-center">
-                    <button
-                      onClick={() => handleCategorySelect(category.uuid)}
+                    <Link
+                      to={categoryPath(category)}
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       {category.name}
-                    </button>
+                    </Link>
                   </li>
                 ))
               ) : (
-                // Fallback статичные категории, если API не работает
-                <>
-                  <li className="flex justify-center"><button className="text-gray-400 hover:text-white transition-colors">Гостиная</button></li>
-                  <li className="flex justify-center"><button className="text-gray-400 hover:text-white transition-colors">Спальня</button></li>
-                  <li className="flex justify-center"><button className="text-gray-400 hover:text-white transition-colors">Кухня</button></li>
-                  <li className="flex justify-center"><button className="text-gray-400 hover:text-white transition-colors">Детская</button></li>
-                  <li className="flex justify-center"><button className="text-gray-400 hover:text-white transition-colors">Офисная мебель</button></li>
-                  <li className="flex justify-center"><button className="text-gray-400 hover:text-white transition-colors">Прихожая</button></li>
-                </>
+                <li className="flex justify-center">
+                  <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                    Весь каталог
+                  </Link>
+                </li>
               )}
             </ul>
           </div>
 
-          {/* Покупателям */}
           <div className="space-y-4 text-center">
             <h3 className="text-lg font-semibold text-white">Покупателям</h3>
             <ul className="space-y-2 text-sm">
-              <li className="flex justify-center"><a href="#" className="text-gray-400 hover:text-white transition-colors">Доставка и сборка</a></li>
-              <li className="flex justify-center"><a href="#" className="text-gray-400 hover:text-white transition-colors">Гарантия</a></li>
-              <li className="flex justify-center"><a href="#" className="text-gray-400 hover:text-white transition-colors">Рассрочка</a></li>
+              <li className="flex justify-center">
+                <Link to="/delivery" className="text-gray-400 hover:text-white transition-colors">
+                  Доставка и сборка
+                </Link>
+              </li>
+              <li className="flex justify-center">
+                <Link to="/warranty" className="text-gray-400 hover:text-white transition-colors">
+                  Гарантия
+                </Link>
+              </li>
+              <li className="flex justify-center">
+                <Link to="/installment" className="text-gray-400 hover:text-white transition-colors">
+                  Рассрочка
+                </Link>
+              </li>
             </ul>
           </div>
 

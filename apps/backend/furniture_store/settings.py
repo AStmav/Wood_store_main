@@ -165,6 +165,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'rest_framework',
     'corsheaders',
     'drf_yasg',
@@ -178,7 +179,11 @@ INSTALLED_APPS = [
     'news.apps.NewsConfig',
     'about.apps.AboutConfig',  # Раздел "О нас"
     'pages.apps.PagesConfig',
+    'seo.apps.SeoConfig',
 ]
+
+# Публичный URL сайта (sitemap, canonical, OG)
+SITE_URL = os.getenv('SITE_URL', 'https://skazkindomykt.ru').rstrip('/')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

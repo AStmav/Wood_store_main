@@ -5,6 +5,7 @@ import CatalogMegaMenu from './CatalogMegaMenu.jsx';
 import MobileCatalogMenu from './MobileCatalogMenu.jsx';
 import { productService } from '../api/productService.js';
 import logoImage from '../assets/images/logo.png';
+import { categoryPath } from '../seo/seoConfig.js';
 
 export default function Header() {
   const { itemsCount } = useMyProducts();
@@ -80,11 +81,15 @@ export default function Header() {
     }
   };
 
-  const handleCategorySelect = (categoryUuid) => {
-    if (categoryUuid) {
-      navigate(`/catalog/${categoryUuid}`);
-    } else {
+  const handleCategorySelect = (categoryOrKey) => {
+    if (!categoryOrKey && categoryOrKey !== '') {
       navigate('/');
+    } else if (categoryOrKey === '') {
+      navigate('/');
+    } else if (typeof categoryOrKey === 'object') {
+      navigate(categoryPath(categoryOrKey));
+    } else {
+      navigate(`/catalog/${categoryOrKey}`);
     }
     setIsMegaMenuOpen(false);
     setIsMobileMenuOpen(false);

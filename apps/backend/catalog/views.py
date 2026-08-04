@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
@@ -15,12 +15,22 @@ from .serializers import (
 from .services import ProductService
 from .product_filters import filter_products_queryset
 from .category_tree import collect_sleep_sizes, get_descendant_pks
+from .lookup import resolve_by_slug_or_uuid
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
-    lookup_field = 'uuid'
+    # SEO: публичные URL по slug; UUID тоже принимается (обратная совместимость)
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'lookup'
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup = self.kwargs.get(self.lookup_url_kwarg)
+        obj = resolve_by_slug_or_uuid(queryset, lookup)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'search', 'filters', 'featured']:
@@ -91,7 +101,15 @@ class ProductViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
-    lookup_field = 'uuid'
+    lookup_field = 'slug'
+    lookup_url_kwarg = 'lookup'
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup = self.kwargs.get(self.lookup_url_kwarg)
+        obj = resolve_by_slug_or_uuid(queryset, lookup)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'products', 'tree', 'filters']:
@@ -128,7 +146,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
-    def products(self, request, uuid=None):
+    def products(self, request, lookup=None):
         category = self.get_object()
         cat_ids = get_descendant_pks(category)
         products = Product.objects.filter(category_id__in=cat_ids).select_related('category')
@@ -141,7 +159,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
-    def filters(self, request, uuid=None):
+    def filters(self, request, lookup=None):
         category = self.get_object()
         cat_ids = get_descendant_pks(category)
         products = Product.objects.filter(category_id__in=cat_ids, is_available=True)

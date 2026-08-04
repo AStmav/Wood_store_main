@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getMediaUrl } from '../config/api.js';
+import { categoryPath } from '../seo/seoConfig.js';
 
 export default function CatalogMegaMenu({
   categories,
@@ -51,7 +52,7 @@ export default function CatalogMegaMenu({
                         }`}
                         onMouseEnter={() => setHoveredRootId(category.uuid)}
                         onFocus={() => setHoveredRootId(category.uuid)}
-                        onClick={() => onCategorySelect(category.uuid)}
+                        onClick={() => onCategorySelect(category)}
                       >
                         <span>{category.name}</span>
                         <svg
@@ -77,9 +78,9 @@ export default function CatalogMegaMenu({
               {activeRoot ? (
                 <>
                   <Link
-                    to={`/catalog/${activeRoot.uuid}`}
+                    to={categoryPath(activeRoot)}
                     className="inline-flex items-center text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
-                    onClick={() => onCategorySelect(activeRoot.uuid)}
+                    onClick={() => onCategorySelect(activeRoot)}
                   >
                     {activeRoot.name}
                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,9 +93,9 @@ export default function CatalogMegaMenu({
                       {activeRoot.children.map((child) => (
                         <li key={child.uuid}>
                           <Link
-                            to={`/catalog/${child.uuid}`}
+                            to={categoryPath(child)}
                             className="group flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors py-1"
-                            onClick={() => onCategorySelect(child.uuid)}
+                            onClick={() => onCategorySelect(child)}
                           >
                             <span className="mr-2 text-blue-400 group-hover:text-blue-600">•</span>
                             {child.name}
@@ -109,9 +110,9 @@ export default function CatalogMegaMenu({
                   )}
 
                   <Link
-                    to={`/catalog/${activeRoot.uuid}`}
+                    to={categoryPath(activeRoot)}
                     className="inline-block mt-6 text-sm font-medium text-blue-600 hover:text-blue-700"
-                    onClick={() => onCategorySelect(activeRoot.uuid)}
+                    onClick={() => onCategorySelect(activeRoot)}
                   >
                     Смотреть все: {activeRoot.name}
                   </Link>

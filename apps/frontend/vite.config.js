@@ -11,6 +11,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    // sourcemap в prod увеличивает размер деплоя — включайте только для отладки
+    sourcemap: false,
   }
 }) 

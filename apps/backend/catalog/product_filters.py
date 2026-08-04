@@ -12,7 +12,12 @@ def filter_products_queryset(queryset, request):
     category_id = request.query_params.get('category')
     if category_id:
         try:
-            category = Category.objects.get(uuid=category_id, is_active=True)
+            import uuid as uuid_lib
+            try:
+                uuid_lib.UUID(str(category_id))
+                category = Category.objects.get(uuid=category_id, is_active=True)
+            except (ValueError, TypeError):
+                category = Category.objects.get(slug=category_id, is_active=True)
             include_children = request.query_params.get('include_subcategories', 'true').lower() == 'true'
             if include_children:
                 queryset = queryset.filter(category_id__in=category.get_descendant_pks())

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
 import ProductPriceDisplay, { ProductPhotoDiscountBadge } from './ProductPriceDisplay.jsx';
+import { productPath } from '../seo/seoConfig.js';
 
 export default function ProductCard({ product }) {
   const { addProduct, isInMyProducts, loading } = useMyProducts();
@@ -34,11 +35,13 @@ export default function ProductCard({ product }) {
   return (
     <>
       <div className="bg-white shadow-lg rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group h-full flex flex-col w-full">
-        <Link to={`/product/${product.uuid}`} className="block flex-1 flex flex-col">
+        <Link to={productPath(product)} className="block flex-1 flex flex-col">
           <div className="relative overflow-hidden w-full" style={{ aspectRatio: '16/9' }}>
             <img
               src={product.image || '/placeholder-product.svg'}
               alt={product.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 e.target.src = '/placeholder-product.svg';

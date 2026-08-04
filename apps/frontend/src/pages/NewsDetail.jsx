@@ -4,6 +4,7 @@ import { newsService } from '../api/newsService';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import SeoHead from '../components/SeoHead.jsx';
 import { getMediaUrl } from '../config/api';
 
 const NewsDetail = () => {
@@ -56,6 +57,12 @@ const NewsDetail = () => {
 
   return (
     <Layout>
+      <SeoHead
+        title={news.title}
+        description={news.excerpt || news.title}
+        path={`/news/${news.slug}`}
+        image={news.image}
+      />
       <div className="py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Хлебные крошки */}

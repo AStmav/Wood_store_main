@@ -3,6 +3,7 @@ import { aboutService } from '../api/aboutService';
 import Layout from '../components/Layout';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import SeoHead from '../components/SeoHead.jsx';
 import { getMediaUrl } from '../config/api';
 
 const About = () => {
@@ -42,6 +43,12 @@ const About = () => {
 
   return (
     <Layout>
+      <SeoHead
+        title={about.title}
+        description={(about.content || '').replace(/<[^>]+>/g, ' ').slice(0, 160)}
+        path="/about"
+        image={about.image}
+      />
       <div className="py-8">
         <div className="max-w-4xl mx-auto px-4">
         {/* Заголовок страницы */}
