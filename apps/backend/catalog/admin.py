@@ -45,7 +45,7 @@ class ProductAdminForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        exclude = ('slug', 'image')
+        exclude = ('slug', 'image', 'image_card')
 
     def clean_specifications(self):
         value = self.cleaned_data.get('specifications')
@@ -148,10 +148,16 @@ class ProductAdmin(admin.ModelAdmin):
         if current != image_name:
             Product.objects.filter(pk=product.pk).update(image=image_name or None)
             product.refresh_from_db(fields=['image'])
-        # Всегда обновляем компактное превью под актуальное фото каталога
-        if product.refresh_image_card(force=True):
-            card_name = product.image_card.name if product.image_card else None
-            Product.objects.filter(pk=product.pk).update(image_card=card_name)
+        # Компактное превью для сетки (не роняем сохранение админки при сбое Pillow)
+        try:
+            if product.refresh_image_card(force=True):
+                card_name = product.image_card.name if product.image_card else None
+                Product.objects.filter(pk=product.pk).update(image_card=card_name)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(
+                'Failed to build image_card for product pk=%s', product.pk,
+            )
 
     actions = ['make_available', 'make_unavailable']
 
