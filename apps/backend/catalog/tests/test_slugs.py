@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from catalog.models import Category, Product
-from catalog.slugs import generate_unique_slug, product_slug_base
+from catalog.slugs import generate_unique_slug, product_slug_base, slug_base_from_name, transliterate_to_latin
 
 
 class SlugGenerationTests(TestCase):
@@ -15,9 +15,20 @@ class SlugGenerationTests(TestCase):
             description='',
         )
 
+    def test_slug_is_ascii_latin(self):
+        self.assertEqual(slug_base_from_name('Диван угловой'), 'divan-uglovoy')
+        self.assertRegex(self.category_divany.slug, r'^[a-z0-9-]+$')
+        self.assertTrue(self.category_divany.slug.isascii())
+        self.assertIn('divan', self.category_divany.slug)
+
+    def test_transliterate_common_letters(self):
+        self.assertEqual(transliterate_to_latin('Стеллаж'), 'stellazh')
+        self.assertEqual(slug_base_from_name('Стеллаж дуб'), 'stellazh-dub')
+
     def test_product_slug_includes_category(self):
         base = product_slug_base('Диван угловой', self.category_divany)
         self.assertTrue(base.endswith(f'-{self.category_divany.slug}'))
+        self.assertTrue(base.isascii())
 
     def test_same_name_different_categories_get_different_slugs(self):
         p1 = Product.objects.create(
@@ -31,6 +42,8 @@ class SlugGenerationTests(TestCase):
             category=self.category_krovati,
         )
         self.assertNotEqual(p1.slug, p2.slug)
+        self.assertTrue(p1.slug.isascii())
+        self.assertTrue(p2.slug.isascii())
 
     def test_duplicate_name_same_category_gets_suffix_2(self):
         p1 = Product.objects.create(

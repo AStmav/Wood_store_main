@@ -6,20 +6,19 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from django.utils.text import slugify
-
-
-def make_slug(value: str, prefix: str = 'item') -> str:
-    slug = slugify(value, allow_unicode=True)
-    return slug or f'{prefix}-{abs(hash(value)) % 10_000_000}'
 from PIL import Image, ImageDraw, ImageFont
 
 from about.models import About
 from catalog.models import Category, Product, ProductImage
+from catalog.slugs import slug_base_from_name
 from news.models import News
 from orders.models import Delivery, Order, OrderItem, Payment
 from orders.services import OrderService
 from users.models import User
+
+
+def make_slug(value: str, prefix: str = 'item') -> str:
+    return slug_base_from_name(value, prefix=prefix)
 
 CATEGORY_TREE = {
     'Диваны и кресла': {

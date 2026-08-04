@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getMediaUrl } from '../config/api.js';
 import { ProductPhotoDiscountBadge } from './ProductPriceDisplay.jsx';
+import ImageLightbox from './ImageLightbox.jsx';
 
 /**
  * Build ordered gallery slides from API product payload.
@@ -25,14 +26,19 @@ export function resolveProductGalleryImages(product) {
   return [{ id: 'placeholder', url: '/placeholder-product.svg', alt: name }];
 }
 
+const SWIPE_MOVE_THRESHOLD = 14;
+
 const ProductImageGallery = ({ product }) => {
   const slides = resolveProductGalleryImages(product);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const scrollerRef = useRef(null);
+  const touchStartRef = useRef(null);
   const hasMultiple = slides.length > 1;
 
   useEffect(() => {
     setActiveIndex(0);
+    setLightboxOpen(false);
   }, [product?.uuid]);
 
   useEffect(() => {
@@ -58,25 +64,64 @@ const ProductImageGallery = ({ product }) => {
     }
   };
 
+  const openLightbox = (index) => {
+    setActiveIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const handleTouchStart = (event) => {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event) => {
+    const start = touchStartRef.current;
+    const touch = event.changedTouches?.[0];
+    const target = event.currentTarget;
+    if (!start || !touch || !target) {
+      touchStartRef.current = null;
+      return;
+    }
+    const dx = Math.abs(touch.clientX - start.x);
+    const dy = Math.abs(touch.clientY - start.y);
+    target.dataset.moved = dx > SWIPE_MOVE_THRESHOLD || dy > SWIPE_MOVE_THRESHOLD ? '1' : '0';
+    touchStartRef.current = null;
+  };
+
+  const handleMobileImageClick = (index) => (event) => {
+    const moved = event.currentTarget.dataset.moved === '1';
+    event.currentTarget.dataset.moved = '0';
+    if (moved) return;
+    openLightbox(index);
+  };
+
   const active = slides[activeIndex] || slides[0];
 
   return (
     <div className="space-y-3">
       {/* Desktop: main image */}
       <div className="relative hidden sm:block aspect-square bg-gray-100 rounded-lg overflow-hidden">
-        <img
-          key={active.id}
-          src={active.url}
-          alt={active.alt}
-          className="w-full h-full object-cover"
-          fetchPriority="high"
-          onError={(e) => {
-            e.target.src = '/placeholder-product.svg';
-          }}
-        />
+        <button
+          type="button"
+          className="block h-full w-full cursor-zoom-in p-0 border-0 bg-transparent"
+          onClick={() => openLightbox(activeIndex)}
+          aria-label="Увеличить изображение"
+        >
+          <img
+            key={active.id}
+            src={active.url}
+            alt={active.alt}
+            className="w-full h-full object-cover pointer-events-none"
+            fetchPriority="high"
+            onError={(e) => {
+              e.target.src = '/placeholder-product.svg';
+            }}
+          />
+        </button>
         <ProductPhotoDiscountBadge product={product} />
         {hasMultiple && (
-          <div className="absolute bottom-3 right-3 rounded-md bg-black/55 px-2.5 py-1 text-xs font-medium text-white">
+          <div className="pointer-events-none absolute bottom-3 right-3 rounded-md bg-black/55 px-2.5 py-1 text-xs font-medium text-white">
             {activeIndex + 1}/{slides.length}
           </div>
         )}
@@ -92,16 +137,36 @@ const ProductImageGallery = ({ product }) => {
         >
           {slides.map((slide, index) => (
             <div key={slide.id} className="relative w-full h-full flex-shrink-0 snap-center">
-              <img
-                src={slide.url}
-                alt={slide.alt}
-                className="h-full w-full object-cover"
-                loading={index === 0 ? 'eager' : 'lazy'}
-                fetchPriority={index === 0 ? 'high' : 'auto'}
-                onError={(e) => {
-                  e.target.src = '/placeholder-product.svg';
+              {/* div вместо button: <button> внутри overflow-x часто ломает native swipe на iOS */}
+              <div
+                role="button"
+                tabIndex={0}
+                className="block h-full w-full cursor-zoom-in outline-none"
+                style={{ touchAction: 'pan-x pan-y' }}
+                data-moved="0"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onClick={handleMobileImageClick(index)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openLightbox(index);
+                  }
                 }}
-              />
+                aria-label={`Увеличить: ${slide.alt}`}
+              >
+                <img
+                  src={slide.url}
+                  alt={slide.alt}
+                  draggable={false}
+                  className="h-full w-full object-cover pointer-events-none"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                  onError={(e) => {
+                    e.target.src = '/placeholder-product.svg';
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -147,6 +212,15 @@ const ProductImageGallery = ({ product }) => {
             );
           })}
         </div>
+      )}
+
+      {lightboxOpen && (
+        <ImageLightbox
+          images={slides}
+          index={activeIndex}
+          onClose={() => setLightboxOpen(false)}
+          onIndexChange={goTo}
+        />
       )}
     </div>
   );
