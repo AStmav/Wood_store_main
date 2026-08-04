@@ -4,6 +4,7 @@ from django.db.models import JSONField
 
 from furniture_store.models import BaseModel
 from .discounts import DISCOUNT_PERCENT_CHOICES, VALID_DISCOUNT_PERCENTS, calculate_sale_price
+from .image_utils import build_card_image_content, card_upload_to
 from .slugs import assign_unique_slug, product_slug_base, slug_base_from_name
 
 
@@ -96,6 +97,13 @@ class Product(BaseModel):
         verbose_name='Категория',
     )
     image = models.ImageField(upload_to='products/', blank=True, null=True, verbose_name='Изображение')
+    image_card = models.ImageField(
+        upload_to=card_upload_to,
+        blank=True,
+        null=True,
+        verbose_name='Превью для каталога',
+        help_text='Автоматически создаётся из основного фото (до ~800px, WebP).',
+    )
     slug = models.SlugField(max_length=200, unique=True, verbose_name='Slug')
     is_available = models.BooleanField(default=True, verbose_name='Показывать на сайте')
     specifications = JSONField(default=dict, blank=True, verbose_name='Характеристики')
@@ -117,6 +125,11 @@ class Product(BaseModel):
             return None
         return calculate_sale_price(self.price, self.discount_percent)
 
+    @property
+    def list_image(self):
+        """URL-поле для сетки: компактное превью или оригинал."""
+        return self.image_card or self.image
+
     def clean(self):
         super().clean()
         if self.discount_percent not in VALID_DISCOUNT_PERCENTS:
@@ -128,13 +141,57 @@ class Product(BaseModel):
                 'discount_percent': 'Скидка недоступна для товаров с ценой по запросу.',
             })
 
+    def refresh_image_card(self, force: bool = False) -> bool:
+        """Создать/обновить image_card из image. Возвращает True если файл записан."""
+        if not self.image:
+            if self.image_card:
+                self.image_card.delete(save=False)
+                self.image_card = None
+                return True
+            return False
+
+        if self.image_card and not force:
+            return False
+
+        content = build_card_image_content(self.image)
+        if not content:
+            return False
+
+        if self.image_card:
+            self.image_card.delete(save=False)
+        self.image_card.save(content.name, content, save=False)
+        return True
+
     def save(self, *args, **kwargs):
         if self.specifications is None:
             self.specifications = {}
         if self._should_regenerate_slug():
             base_slug = product_slug_base(self.name, self.category)
             self.slug = assign_unique_slug(self, base_slug, max_length=200)
+
+        update_fields = kwargs.get('update_fields')
+        skip_card = (
+            update_fields is not None
+            and 'image' not in update_fields
+        )
+        image_changed = False if skip_card else self._image_changed()
         super().save(*args, **kwargs)
+
+        if skip_card:
+            return
+
+        if image_changed or (self.image and not self.image_card):
+            if self.refresh_image_card(force=image_changed):
+                super().save(update_fields=['image_card', 'updated_at'])
+
+    def _image_changed(self) -> bool:
+        if not self.pk:
+            return bool(self.image)
+        try:
+            old = Product.objects.get(pk=self.pk)
+        except Product.DoesNotExist:
+            return bool(self.image)
+        return (old.image.name if old.image else None) != (self.image.name if self.image else None)
 
     def _should_regenerate_slug(self) -> bool:
         if not self.pk:

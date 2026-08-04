@@ -13,5 +13,12 @@ export default defineConfig({
     outDir: 'dist',
     // sourcemap в prod увеличивает размер деплоя — включайте только для отладки
     sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
   }
 }) 

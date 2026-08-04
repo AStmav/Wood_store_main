@@ -1,8 +1,9 @@
 import api from './clients';
 
-// Кеш для фильтров
+// Кеш для фильтров (+ in-flight, чтобы Header/Home/Footer не били API одновременно)
 let filtersCache = null;
 let filtersCacheTimestamp = null;
+let filtersInflight = null;
 const FILTERS_CACHE_DURATION = 300000; // 5 минут
 
 /** Нормализует ответ DRF PageNumberPagination. */
@@ -37,17 +38,25 @@ export const productService = {
     const now = Date.now();
 
     if (filtersCache && filtersCacheTimestamp && (now - filtersCacheTimestamp) < FILTERS_CACHE_DURATION) {
-      console.log('Using cached filters');
       return filtersCache;
     }
 
-    console.log('Fetching filters from API');
-    const response = await api.get('catalog/products/filters/');
+    if (filtersInflight) {
+      return filtersInflight;
+    }
 
-    filtersCache = response.data;
-    filtersCacheTimestamp = now;
+    filtersInflight = api
+      .get('catalog/products/filters/')
+      .then((response) => {
+        filtersCache = response.data;
+        filtersCacheTimestamp = Date.now();
+        return response.data;
+      })
+      .finally(() => {
+        filtersInflight = null;
+      });
 
-    return response.data;
+    return filtersInflight;
   },
 
   getProduct: async (uuid) => {

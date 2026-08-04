@@ -409,6 +409,17 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
+# Кеш каталога (filters/featured/tree). Redis из CELERY_BROKER_URL / CACHE_URL.
+_redis_cache_url = os.getenv('CACHE_URL') or os.getenv('REDIS_URL') or CELERY_BROKER_URL
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': _redis_cache_url,
+        'KEY_PREFIX': 'wood',
+        'TIMEOUT': 300,
+    }
+}
+
 CELERY_WORKER_LOG_FORMAT = '[%(asctime)s: %(levelname)s/%(processName)s] %(message)s'
 CELERY_WORKER_TASK_LOG_FORMAT = '[%(asctime)s: %(levelname)s/%(processName)s][%(task_name)s(%(task_id)s)] %(message)s'
 

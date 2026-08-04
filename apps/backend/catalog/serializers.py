@@ -3,6 +3,15 @@ from rest_framework import serializers
 from .models import Product, Category, ProductImage
 
 
+class CategoryBriefSerializer(serializers.ModelSerializer):
+    """Лёгкая категория без product_count (без N+1 в списках товаров)."""
+
+    class Meta:
+        model = Category
+        fields = ['uuid', 'name', 'slug']
+        read_only_fields = fields
+
+
 class CategorySerializer(serializers.ModelSerializer):
     parent_uuid = serializers.UUIDField(source='parent.uuid', read_only=True, allow_null=True)
     product_count = serializers.SerializerMethodField()
@@ -46,7 +55,7 @@ class CategoryDetailSerializer(CategorySerializer):
         fields = CategorySerializer.Meta.fields + ['breadcrumbs', 'children']
 
     def get_breadcrumbs(self, obj):
-        return CategorySerializer(obj.get_breadcrumbs(), many=True).data
+        return CategoryBriefSerializer(obj.get_breadcrumbs(), many=True).data
 
     def get_children(self, obj):
         children = obj.children.filter(is_active=True).order_by('sort_order', 'name')
@@ -75,20 +84,35 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(ProductPricingMixin, serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
+    category = CategoryBriefSerializer(read_only=True)
+    image = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
             'discount_percent', 'sale_price', 'has_discount',
-            'image', 'category', 'slug', 'specifications',
+            'image', 'category', 'slug',
         ]
         read_only_fields = ['uuid', 'slug']
 
+    def get_image(self, obj):
+        # В сетке отдаём компактное превью, если есть
+        field = obj.image_card or obj.image
+        if not field:
+            return None
+        return field.url
+
+    def get_description(self, obj):
+        text = (obj.description or '').strip()
+        if len(text) <= 160:
+            return text
+        return text[:157].rstrip() + '…'
+
 
 class ProductDetailSerializer(ProductPricingMixin, serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
+    category = CategoryBriefSerializer(read_only=True)
     related_products = ProductListSerializer(many=True, read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
 

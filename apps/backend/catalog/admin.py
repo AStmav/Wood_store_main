@@ -144,8 +144,14 @@ class ProductAdmin(admin.ModelAdmin):
         product = form.instance
         first = product.images.order_by('sort_order', 'id').first()
         image_name = first.image.name if first else ''
-        if product.image.name != image_name:
-            Product.objects.filter(pk=product.pk).update(image=image_name)
+        current = product.image.name if product.image else ''
+        if current != image_name:
+            Product.objects.filter(pk=product.pk).update(image=image_name or None)
+            product.refresh_from_db(fields=['image'])
+        # Всегда обновляем компактное превью под актуальное фото каталога
+        if product.refresh_image_card(force=True):
+            card_name = product.image_card.name if product.image_card else None
+            Product.objects.filter(pk=product.pk).update(image_card=card_name)
 
     actions = ['make_available', 'make_unavailable']
 
