@@ -251,6 +251,107 @@ class TelegramService:
         message += f"""
 📝 <b>Комментарий:</b> {order.comment or 'Нет комментария'}
 
-🔗 <b>Ссылка на заявку:</b> http://localhost:8000/admin/orders/order/{order.id}/
+🔗 <b>Ссылка на заявку:</b> {settings.SITE_URL}/admin/orders/order/{order.id}/
 """
         return message
+
+
+def _order_admin_url(order) -> str:
+    return f'{settings.SITE_URL}/admin/orders/order/{order.id}/'
+
+
+def _order_items_lines(order) -> list[str]:
+    return [item.product.name for item in order.items.select_related('product').all()]
+
+
+class OrderEmailService:
+    """Письмо менеджеру о новой заявке на расчёт."""
+
+    def __init__(self):
+        raw = getattr(settings, 'ORDER_NOTIFY_EMAIL', '') or ''
+        self.recipients = [part.strip() for part in raw.split(',') if part.strip()]
+        self.from_email = settings.DEFAULT_FROM_EMAIL
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.recipients) and bool(getattr(settings, 'EMAIL_HOST', '') or settings.DEBUG)
+
+    def send_order_notification(self, order) -> bool:
+        if not self.recipients:
+            logger.warning('ORDER_NOTIFY_EMAIL не задан — email-уведомление пропущено')
+            return False
+
+        if not getattr(settings, 'EMAIL_HOST', '') and not settings.DEBUG:
+            logger.error('EMAIL_HOST не задан — невозможно отправить SMTP-письмо')
+            return False
+
+        try:
+            from django.core.mail import send_mail
+
+            items = _order_items_lines(order)
+            items_block = '\n'.join(f'• {name}' for name in items) or '• (нет позиций)'
+            subject = f'Новая заявка на расчёт {order.order_number or order.id}'
+            body = (
+                f'Новая заявка на расчёт с сайта\n'
+                f'\n'
+                f'Номер: {order.order_number or order.id}\n'
+                f'Клиент: {order.customer_name or "—"}\n'
+                f'Телефон: {order.phone}\n'
+                f'Email: {order.email or "—"}\n'
+                f'Адрес: {order.address or "—"}\n'
+                f'Ориентир по прайсу: {order.total_amount} ₽\n'
+                f'Дата: {order.created_at.strftime("%d.%m.%Y %H:%M")}\n'
+                f'\n'
+                f'Интересуется:\n{items_block}\n'
+                f'\n'
+                f'Комментарий: {order.comment or "—"}\n'
+                f'\n'
+                f'Админка: {_order_admin_url(order)}\n'
+            )
+            sent = send_mail(
+                subject=subject,
+                message=body,
+                from_email=self.from_email,
+                recipient_list=self.recipients,
+                fail_silently=False,
+            )
+            if sent:
+                logger.info('Order email notification sent for order %s to %s', order.id, self.recipients)
+                return True
+            logger.error('send_mail returned 0 for order %s', order.id)
+            return False
+        except Exception as exc:
+            logger.error('Failed to send order email for order %s: %s', order.id, exc)
+            return False
+
+
+def notify_manager_about_order(order) -> dict:
+    """
+    Отправить уведомление менеджеру: email (основной канал) + Telegram (если доступен).
+    Возвращает {'email': bool, 'telegram': bool}.
+    """
+    result = {'email': False, 'telegram': False}
+
+    try:
+        result['email'] = OrderEmailService().send_order_notification(order)
+    except Exception as exc:
+        logger.error('Email notify failed for order %s: %s', order.id, exc)
+
+    try:
+        if settings.TELEGRAM_BOT_TOKEN and settings.TELEGRAM_CHANNEL_ID:
+            result['telegram'] = TelegramService().send_order_notification(order)
+    except Exception as exc:
+        logger.error('Telegram notify failed for order %s: %s', order.id, exc)
+
+    update_fields = []
+    if result['email'] and not order.email_notification_sent:
+        order.email_notification_sent = True
+        update_fields.append('email_notification_sent')
+    if result['telegram'] and not order.telegram_notification_sent:
+        order.telegram_notification_sent = True
+        update_fields.append('telegram_notification_sent')
+    if update_fields:
+        update_fields.append('updated_at')
+        order.save(update_fields=update_fields)
+
+    return result

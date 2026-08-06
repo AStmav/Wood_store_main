@@ -87,6 +87,10 @@ class Order(BaseModel):
     )
     is_deleted = models.BooleanField(default=False, verbose_name='Удален')
     telegram_notification_sent = models.BooleanField(default=False, verbose_name="Telegram уведомления об отправке")
+    email_notification_sent = models.BooleanField(
+        default=False,
+        verbose_name='Email-уведомление отправлено',
+    )
 
     class Meta:
         verbose_name = 'Заявка'

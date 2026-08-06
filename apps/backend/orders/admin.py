@@ -19,12 +19,16 @@ class PaymentInline(admin.StackedInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'phone', 'email', 'get_status_display_colored', 'get_total_amount', 'get_telegram_status', 'created_at', 'get_is_deleted_display')
-    list_filter = ('status', 'telegram_notification_sent', 'created_at', 'is_deleted')
+    list_display = (
+        'id', 'phone', 'email', 'get_status_display_colored', 'get_total_amount',
+        'get_email_status', 'get_telegram_status', 'created_at', 'get_is_deleted_display',
+    )
+    list_filter = ('status', 'email_notification_sent', 'telegram_notification_sent', 'created_at', 'is_deleted')
     search_fields = ('id', 'user__email', 'user__phone', 'customer_name', 'phone', 'address', 'order_number')
     readonly_fields = (
         'total_amount', 'created_at', 'updated_at', 'order_number',
-        'telegram_notification_sent', 'personal_data_consent', 'consent_at',
+        'telegram_notification_sent', 'email_notification_sent',
+        'personal_data_consent', 'consent_at',
     )
     inlines = [OrderItemInline, DeliveryInline, PaymentInline]
     
@@ -42,7 +46,7 @@ class OrderAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
         ('Уведомления', {
-            'fields': ('telegram_notification_sent',),
+            'fields': ('email_notification_sent', 'telegram_notification_sent'),
             'classes': ('collapse',)
         }),
         ('Дополнительно', {
@@ -87,6 +91,17 @@ class OrderAdmin(admin.ModelAdmin):
             )
     get_is_deleted_display.short_description = 'Статус'
     get_is_deleted_display.admin_order_field = 'is_deleted'
+
+    def get_email_status(self, obj):
+        if obj.email_notification_sent:
+            return format_html(
+                '<span style="color: #28a745; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #28a74520; border: 1px solid #28a74540;">✅ EMAIL</span>'
+            )
+        return format_html(
+            '<span style="color: #dc3545; font-weight: bold; padding: 4px 8px; border-radius: 4px; background-color: #dc354520; border: 1px solid #dc354540;">❌ EMAIL</span>'
+        )
+    get_email_status.short_description = 'Email'
+    get_email_status.admin_order_field = 'email_notification_sent'
 
     def get_telegram_status(self, obj):
         """Отображение статуса Telegram уведомления с цветом"""

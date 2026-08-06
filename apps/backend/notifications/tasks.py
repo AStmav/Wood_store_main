@@ -1,58 +1,60 @@
 from celery import shared_task
-from .services import TelegramService
+from django.db.models import Q
 from orders.models import Order
+from .services import notify_manager_about_order
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task(bind=True, max_retries=3)
 def send_order_notification_task(self, order_id):
-    """Celery задача для отправки уведомления о заказе"""
+    """Уведомление менеджеру: email и/или Telegram."""
     try:
-        logger.info(f"Starting order notification task for order {order_id}")
-        
-        # Получаем заказ из базы данных
+        logger.info('Starting order notification task for order %s', order_id)
         order = Order.objects.get(id=order_id)
-        
-        # Создаем сервис Telegram
-        telegram_service = TelegramService()
-        
-        # Отправляем уведомление
-        success = telegram_service.send_order_notification(order)
-        
-        if success:
-            # Обновляем статус заказа
-            order.telegram_notification_sent = True
-            order.save()
-            logger.info(f"Order notification sent successfully for order {order_id}")
-            return f"Notification sent for order {order_id}"
-        else:
-            logger.error(f"Failed to send notification for order {order_id}")
-            raise Exception("Failed to send notification")
-            
+        result = notify_manager_about_order(order)
+
+        if result.get('email') or result.get('telegram'):
+            logger.info(
+                'Order %s notified: email=%s telegram=%s',
+                order_id,
+                result.get('email'),
+                result.get('telegram'),
+            )
+            return f"Notification sent for order {order_id}: {result}"
+
+        logger.error('Failed to send any notification for order %s', order_id)
+        raise Exception('Failed to send notification')
+
     except Order.DoesNotExist:
-        logger.error(f"Order {order_id} not found")
-        raise Exception(f"Order {order_id} not found")
+        logger.error('Order %s not found', order_id)
+        raise Exception(f'Order {order_id} not found')
     except Exception as exc:
-        logger.error(f"Error in order notification task: {exc}")
-        # Повторяем задачу через 60 секунд
+        logger.error('Error in order notification task: %s', exc)
         raise self.retry(exc=exc, countdown=60)
+
 
 @shared_task
 def check_unsent_orders():
-    """Проверка неотправленных заказов каждую минуту"""
+    """Повторная отправка заявок без успешного email и без Telegram."""
     try:
-        # Получаем заказы без уведомлений
-        orders = Order.objects.filter(telegram_notification_sent=False)
-        
+        orders = Order.objects.filter(
+            Q(email_notification_sent=False) & Q(telegram_notification_sent=False),
+            is_deleted=False,
+        )
         for order in orders:
             try:
-                # Отправляем уведомление асинхронно
                 send_order_notification_task.delay(order.id)
-                logger.info(f"Scheduled notification for order {order.id}")
+                logger.info('Scheduled notification for order %s', order.id)
             except Exception as e:
-                logger.error(f"Failed to schedule notification for order {order.id}: {e}")
-        
-        logger.info(f"Checked {len(orders)} unsent orders")
+                logger.error('Failed to schedule notification for order %s: %s', order.id, e)
+                # Fallback без Celery — хотя бы email синхронно
+                try:
+                    notify_manager_about_order(order)
+                except Exception as sync_err:
+                    logger.error('Sync notify failed for order %s: %s', order.id, sync_err)
+
+        logger.info('Checked %s unsent orders', orders.count())
     except Exception as e:
-        logger.error(f"Failed to check unsent orders: {e}")
+        logger.error('Failed to check unsent orders: %s', e)
