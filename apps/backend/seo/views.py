@@ -13,6 +13,7 @@ from django.views.decorators.http import require_GET
 from about.models import About
 from catalog.category_tree import get_descendant_pks
 from catalog.models import Category, Product
+from catalog.availability import AvailabilityStatus
 from news.models import News
 from pages.models import Page
 
@@ -73,6 +74,11 @@ def _html_shell(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="yandex-verification" content="f41d2e27af75d6f2" />
+  <link rel="icon" href="{escape(base)}/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="{escape(base)}/favicon-120.png" type="image/png" sizes="120x120" />
+  <link rel="icon" href="{escape(base)}/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="{escape(base)}/apple-touch-icon.png" />
   <title>{escape(title)}</title>
   <meta name="description" content="{escape(description)}" />
   <link rel="canonical" href="{escape(canonical)}" />
@@ -125,6 +131,12 @@ def _org_ld() -> dict:
     }
 
 
+def _schema_availability(product: Product) -> str:
+    if product.availability_status == AvailabilityStatus.IN_TRANSIT:
+        return 'https://schema.org/PreOrder'
+    return 'https://schema.org/InStock'
+
+
 def _resolve_product(lookup: str) -> Product | None:
     qs = Product.objects.filter(is_available=True).select_related('category').prefetch_related('images')
     if UUID_RE.match(lookup):
@@ -156,7 +168,7 @@ def _product_page(product: Product) -> HttpResponse:
     offer = {
         '@type': 'Offer',
         'url': canonical,
-        'availability': 'https://schema.org/InStock',
+        'availability': _schema_availability(product),
         'priceCurrency': 'RUB',
     }
     if product.price_on_request:

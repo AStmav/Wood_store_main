@@ -3,6 +3,7 @@ from django.db import transaction
 from django.utils import timezone
 from .models import Order, OrderItem, Delivery, Payment, Cart, CartItem
 from catalog.models import Product
+from catalog.availability import AvailabilityStatus
 from catalog.services import ProductService
 
 class OrderService:
@@ -69,6 +70,10 @@ class OrderService:
         for item_data in items_data:
             product_id = item_data.pop('product_id')
             product = Product.objects.get(uuid=product_id)
+            if not product.is_available:
+                raise ValueError(f'Товар «{product.name}» недоступен')
+            if product.availability_status != AvailabilityStatus.IN_STOCK:
+                raise ValueError(f'Товар «{product.name}» в пути и недоступен для заказа')
             item = OrderItem.objects.create(
                 order=order,
                 product=product,
@@ -211,6 +216,8 @@ class CartService:
         product = Product.objects.get(uuid=product_uuid)
         if not product.is_available:
             raise ValueError("Товар недоступен")
+        if product.availability_status != AvailabilityStatus.IN_STOCK:
+            raise ValueError("Товар в пути и недоступен для заказа")
 
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,

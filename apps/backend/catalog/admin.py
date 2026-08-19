@@ -80,17 +80,19 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductImageInline]
     list_display = (
         'name', 'slug', 'category', 'price', 'discount_percent',
-        'price_on_request', 'is_available', 'created_at',
+        'price_on_request', 'availability_status', 'is_available', 'created_at',
     )
-    list_filter = ('category', 'is_available', 'price_on_request', 'discount_percent', 'created_at')
+    list_filter = ('category', 'availability_status', 'is_available', 'price_on_request', 'discount_percent', 'created_at')
     search_fields = ('name', 'description', 'slug')
     readonly_fields = ('uuid', 'slug', 'created_at', 'updated_at', 'sale_price_preview')
-    list_editable = ('is_available',)
+    list_editable = ('availability_status', 'is_available')
 
     fieldsets = (
         ('Основная информация', {
-            'fields': ('name', 'description', 'category', 'is_available'),
+            'fields': ('name', 'description', 'category', 'is_available', 'availability_status'),
             'description': (
+                '«Показывать на сайте» скрывает товар из каталога. '
+                '«Статус наличия» — стикер на карточке: в наличии можно заказать, в пути — только просмотр. '
                 'Фото — в блоке «Галерея» ниже (до 5). '
                 'Первое по порядку показывается в каталоге и первым в карточке товара.'
             ),
@@ -159,7 +161,7 @@ class ProductAdmin(admin.ModelAdmin):
                 'Failed to build image_card for product pk=%s', product.pk,
             )
 
-    actions = ['make_available', 'make_unavailable']
+    actions = ['make_available', 'make_unavailable', 'mark_in_stock', 'mark_in_transit']
 
     @admin.display(description='Цена со скидкой')
     def sale_price_preview(self, obj):
@@ -181,3 +183,15 @@ class ProductAdmin(admin.ModelAdmin):
         updated = queryset.update(is_available=False)
         self.message_user(request, f'{updated} товаров скрыто с сайта.')
     make_unavailable.short_description = 'Скрыть с сайта'
+
+    def mark_in_stock(self, request, queryset):
+        from .availability import AvailabilityStatus
+        updated = queryset.update(availability_status=AvailabilityStatus.IN_STOCK)
+        self.message_user(request, f'{updated} товаров отмечено «В наличии».')
+    mark_in_stock.short_description = 'Статус: в наличии'
+
+    def mark_in_transit(self, request, queryset):
+        from .availability import AvailabilityStatus
+        updated = queryset.update(availability_status=AvailabilityStatus.IN_TRANSIT)
+        self.message_user(request, f'{updated} товаров отмечено «В пути».')
+    mark_in_transit.short_description = 'Статус: в пути'

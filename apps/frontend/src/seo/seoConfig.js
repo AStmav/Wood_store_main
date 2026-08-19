@@ -1,3 +1,5 @@
+import { schemaAvailabilityUrl } from '../utils/productAvailability.js';
+
 const SITE_NAME = 'Сказкин Дом';
 const DEFAULT_DESCRIPTION =
   'Сказкин Дом — детская мебель и игрушки в Якутске. Кровати, матрасы, столы и стулья с доставкой и сборкой.';
@@ -53,7 +55,7 @@ export function buildProductJsonLd(product) {
   const offer = {
     '@type': 'Offer',
     url,
-    availability: 'https://schema.org/InStock',
+    availability: schemaAvailabilityUrl(product),
     priceCurrency: 'RUB',
   };
   if (product.price_on_request) {

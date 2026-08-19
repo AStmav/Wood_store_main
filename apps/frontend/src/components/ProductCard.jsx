@@ -2,20 +2,23 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
 import ProductPriceDisplay, { ProductPhotoDiscountBadge } from './ProductPriceDisplay.jsx';
+import ProductAvailabilityBadge from './ProductAvailabilityBadge.jsx';
 import { productPath } from '../seo/seoConfig.js';
+import { isProductOrderable } from '../utils/productAvailability.js';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, priority = false }) {
   const { addProduct, isInMyProducts, loading } = useMyProducts();
   const [isAdding, setIsAdding] = useState(false);
   const [showMessage, setShowMessage] = useState(null);
 
   const inMyProducts = isInMyProducts(product.uuid);
+  const canOrder = isProductOrderable(product);
 
   const handleAddToMyProducts = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (inMyProducts || isAdding) {
+    if (inMyProducts || isAdding || !canOrder) {
       return;
     }
 
@@ -40,7 +43,9 @@ export default function ProductCard({ product }) {
             <img
               src={product.image || '/placeholder-product.svg'}
               alt={product.name}
-              loading="lazy"
+              loading={priority ? 'eager' : 'lazy'}
+              // fetchpriority: React 18 прокидывает DOM-атрибут как есть
+              {...(priority ? { fetchpriority: 'high' } : {})}
               decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
@@ -78,8 +83,9 @@ export default function ProductCard({ product }) {
               )}
             </div>
 
-            <div className="mt-auto">
+            <div className="mt-auto space-y-2">
               <ProductPriceDisplay product={product} size="md" />
+              <ProductAvailabilityBadge product={product} />
             </div>
           </div>
         </Link>
@@ -88,9 +94,9 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             onClick={handleAddToMyProducts}
-            disabled={inMyProducts || isAdding || loading}
+            disabled={inMyProducts || isAdding || loading || !canOrder}
             className={`w-full min-h-[44px] px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1 ${
-              inMyProducts
+              inMyProducts || !canOrder
                 ? 'bg-gray-100 text-gray-500 cursor-default'
                 : 'bg-blue-600 hover:bg-blue-700 text-white'
             }`}
@@ -101,9 +107,11 @@ export default function ProductCard({ product }) {
             <span>
               {inMyProducts
                 ? 'Уже в моих товарах'
-                : isAdding
-                  ? 'Добавление...'
-                  : 'В мои товары'}
+                : !canOrder
+                  ? 'Недоступно — в пути'
+                  : isAdding
+                    ? 'Добавление...'
+                    : 'В мои товары'}
             </span>
           </button>
         </div>

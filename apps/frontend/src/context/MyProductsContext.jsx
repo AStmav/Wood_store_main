@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { productService } from '../api/productService.js';
+import { isProductOrderable } from '../utils/productAvailability.js';
 
 const MyProductsContext = createContext();
 const STORAGE_KEY = 'wood_project_my_products_v1';
@@ -141,6 +142,12 @@ export function MyProductsProvider({ children }) {
     try {
       setLoading(true);
       const productData = await productService.getProductById(productId);
+      if (!isProductOrderable(productData)) {
+        return {
+          success: false,
+          error: 'Товар в пути — добавление недоступно',
+        };
+      }
       const nextItems = [
         ...items,
         {

@@ -87,12 +87,14 @@ class ProductListSerializer(ProductPricingMixin, serializers.ModelSerializer):
     category = CategoryBriefSerializer(read_only=True)
     image = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
+    is_orderable = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
             'discount_percent', 'sale_price', 'has_discount',
+            'availability_status', 'is_orderable',
             'image', 'category', 'slug',
         ]
         read_only_fields = ['uuid', 'slug']
@@ -115,12 +117,14 @@ class ProductDetailSerializer(ProductPricingMixin, serializers.ModelSerializer):
     category = CategoryBriefSerializer(read_only=True)
     related_products = ProductListSerializer(many=True, read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
+    is_orderable = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
             'uuid', 'name', 'description', 'price', 'price_on_request',
             'discount_percent', 'sale_price', 'has_discount',
+            'availability_status', 'is_orderable',
             'image', 'images', 'category', 'slug', 'related_products', 'specifications',
         ]
         read_only_fields = ['uuid', 'slug']

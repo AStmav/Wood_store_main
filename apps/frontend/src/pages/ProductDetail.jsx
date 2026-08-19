@@ -7,9 +7,11 @@ import ErrorMessage from '../components/ErrorMessage.jsx';
 import SeoHead from '../components/SeoHead.jsx';
 import { useMyProducts } from '../context/MyProductsContext.jsx';
 import ProductPriceDisplay from '../components/ProductPriceDisplay.jsx';
+import ProductAvailabilityBadge from '../components/ProductAvailabilityBadge.jsx';
 import ProductImageGallery from '../components/ProductImageGallery.jsx';
 import { trackProductView } from '../api/analytics.js';
 import { getErrorVariant, getFriendlyErrorMessage } from '../utils/apiError.js';
+import { isProductOrderable } from '../utils/productAvailability.js';
 import {
   isUuid,
   productPath,
@@ -61,6 +63,7 @@ const ProductDetail = () => {
   }, [product?.uuid]);
 
   const inMyProducts = isInMyProducts(product?.uuid);
+  const canOrder = isProductOrderable(product);
 
   const handleAddToMyProducts = async () => {
     const result = await addProduct(product.uuid);
@@ -222,8 +225,9 @@ const ProductDetail = () => {
               )}
 
               <div className="border-t pt-6">
-                <div className="mb-6">
+                <div className="mb-4 space-y-2">
                   <ProductPriceDisplay product={product} size="lg" />
+                  <ProductAvailabilityBadge product={product} />
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-4">
@@ -247,17 +251,24 @@ const ProductDetail = () => {
                     <button
                       type="button"
                       onClick={handleAddToMyProducts}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                      disabled={!canOrder}
+                      className={`flex-1 px-6 py-3 rounded-lg text-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2 ${
+                        canOrder
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                          : 'bg-gray-100 text-gray-500 cursor-default'
+                      }`}
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                       </svg>
-                      <span>В мои товары</span>
+                      <span>{canOrder ? 'В мои товары' : 'Недоступно — в пути'}</span>
                     </button>
                   )}
                 </div>
                 <p className="text-sm text-gray-500 mt-3">
-                  Добавьте товар в список и отправьте запрос — менеджер рассчитает стоимость и свяжется с вами.
+                  {canOrder
+                    ? 'Добавьте товар в список и отправьте запрос — менеджер рассчитает стоимость и свяжется с вами.'
+                    : 'Товар пока в пути. Когда появится на складе, его можно будет добавить в список для расчёта.'}
                 </p>
               </div>
             </div>

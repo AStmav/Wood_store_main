@@ -6,6 +6,8 @@ import LoadingSpinner from '../components/LoadingSpinner.jsx';
 import QuoteRequestModal from '../components/QuoteRequestModal.jsx';
 import OrderSuccessModal from '../components/OrderSuccessModal.jsx';
 import ProductPriceDisplay from '../components/ProductPriceDisplay.jsx';
+import ProductAvailabilityBadge from '../components/ProductAvailabilityBadge.jsx';
+import { isProductOrderable } from '../utils/productAvailability.js';
 
 export default function MyProducts() {
   const { items, loading, removeProduct, clearProducts } = useMyProducts();
@@ -39,6 +41,8 @@ export default function MyProducts() {
   }
 
   const hasItems = items.length > 0;
+  const orderableItems = items.filter((item) => isProductOrderable(item.product));
+  const hasUnavailableItems = hasItems && orderableItems.length < items.length;
 
   return (
     <Layout>
@@ -87,6 +91,7 @@ export default function MyProducts() {
                           <p className="text-xs md:text-sm text-blue-600">{item.product.category.name}</p>
                         )}
                         <ProductPriceDisplay product={item.product} size="sm" />
+                        <ProductAvailabilityBadge product={item.product} className="mt-1" />
                       </div>
                       <button
                         type="button"
@@ -107,14 +112,20 @@ export default function MyProducts() {
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-5 md:px-8 md:py-6 border-t border-gray-200">
                 <div className="flex flex-col gap-4">
                   <p className="text-sm md:text-base text-gray-600">
-                    {items.length}{' '}
-                    {items.length === 1 ? 'товар' : items.length < 5 ? 'товара' : 'товаров'} в списке.
+                    {orderableItems.length}{' '}
+                    {orderableItems.length === 1 ? 'товар' : orderableItems.length < 5 ? 'товара' : 'товаров'} доступно для заявки.
                     Окончательная стоимость уточняется менеджером.
                   </p>
+                  {hasUnavailableItems && (
+                    <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      Некоторые товары в пути — уберите их из списка или дождитесь поступления.
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowQuoteModal(true)}
-                    className="w-full md:w-auto self-start bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                    disabled={orderableItems.length === 0}
+                    className="w-full md:w-auto self-start bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold text-base md:text-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Запросить расчёт и связь
                   </button>
@@ -148,7 +159,7 @@ export default function MyProducts() {
       <QuoteRequestModal
         isOpen={showQuoteModal}
         onClose={() => setShowQuoteModal(false)}
-        items={items}
+        items={orderableItems}
         onRequestCreated={handleRequestCreated}
       />
       <OrderSuccessModal

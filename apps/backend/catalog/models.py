@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import JSONField
 
 from furniture_store.models import BaseModel
+from .availability import AvailabilityStatus, is_orderable_status
 from .discounts import DISCOUNT_PERCENT_CHOICES, VALID_DISCOUNT_PERCENTS, calculate_sale_price
 from .image_utils import build_card_image_content, card_upload_to
 from .slugs import assign_unique_slug, product_slug_base, slug_base_from_name
@@ -106,6 +107,13 @@ class Product(BaseModel):
     )
     slug = models.SlugField(max_length=200, unique=True, verbose_name='Slug')
     is_available = models.BooleanField(default=True, verbose_name='Показывать на сайте')
+    availability_status = models.CharField(
+        max_length=20,
+        choices=AvailabilityStatus.choices,
+        default=AvailabilityStatus.IN_STOCK,
+        verbose_name='Статус наличия',
+        help_text='«В наличии» — можно добавить в «Мои товары». «В пути» — только просмотр.',
+    )
     specifications = JSONField(default=dict, blank=True, verbose_name='Характеристики')
 
     class Meta:
@@ -114,6 +122,10 @@ class Product(BaseModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def is_orderable(self) -> bool:
+        return self.is_available and is_orderable_status(self.availability_status)
 
     @property
     def has_discount(self) -> bool:

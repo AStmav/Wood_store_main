@@ -29,6 +29,7 @@ class ProductResource(resources.ModelResource):
             'price_on_request',
             'category',
             'is_available',
+            'availability_status',
             'slug',
         )
         export_order = (
@@ -39,6 +40,7 @@ class ProductResource(resources.ModelResource):
             'price_on_request',
             'category',
             'is_available',
+            'availability_status',
             'slug',
         )
         skip_unchanged = True
