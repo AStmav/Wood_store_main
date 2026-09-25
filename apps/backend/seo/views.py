@@ -156,7 +156,7 @@ def _product_page(product: Product) -> HttpResponse:
     canonical = f'{base}/product/{product.slug}'
     description = _truncate(product.description or f'{product.name} — купить в {SITE_NAME}, Якутск')
     images = []
-    for img in product.images.all()[:5]:
+    for img in product.images.all()[:10]:
         url = _abs_media(img.image.url if img.image else None)
         if url:
             images.append(url)

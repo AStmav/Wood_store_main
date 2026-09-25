@@ -71,7 +71,7 @@ class ProductImageInline(admin.TabularInline):
     fields = ('image', 'sort_order')
     ordering = ('sort_order', 'id')
     verbose_name = 'Изображение'
-    verbose_name_plural = 'Галерея изображений (до 5)'
+    verbose_name_plural = 'Галерея изображений (до 10)'
 
 
 @admin.register(Product)
@@ -93,7 +93,7 @@ class ProductAdmin(admin.ModelAdmin):
             'description': (
                 '«Показывать на сайте» скрывает товар из каталога. '
                 '«Статус наличия» — стикер на карточке: в наличии можно заказать, в пути — только просмотр. '
-                'Фото — в блоке «Галерея» ниже (до 5). '
+                'Фото — в блоке «Галерея» ниже (до 10). '
                 'Первое по порядку показывается в каталоге и первым в карточке товара.'
             ),
         }),

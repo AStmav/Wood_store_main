@@ -13,7 +13,7 @@ export function resolveProductGalleryImages(product) {
     return [...product.images]
       .filter((item) => item?.image)
       .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-      .slice(0, 5)
+      .slice(0, 10)
       .map((item, index) => ({
         id: item.id ?? index,
         url: getMediaUrl(item.image),

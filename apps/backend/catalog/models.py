@@ -218,9 +218,9 @@ class Product(BaseModel):
 
 
 class ProductImage(models.Model):
-    """Фото товара для галереи на странице товара (до 5 шт., лимит в admin)."""
+    """Фото товара для галереи на странице товара (до 10 шт., лимит в admin)."""
 
-    MAX_PER_PRODUCT = 5
+    MAX_PER_PRODUCT = 10
 
     product = models.ForeignKey(
         Product,
